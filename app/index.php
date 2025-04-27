@@ -74,6 +74,7 @@ require_once 'config/connect.php'; // Kết nối cơ sở dữ liệu
                 while ($row = $result->fetch_assoc()) {
                     echo "<div class='truyen-item'>";
                     echo "<p><strong>" . $row['ten_truyen'] . "</strong></p>";
+                    echo "<a href='views/truyen/chiTietTruyen.php?id_truyen=" . $row['id'] . "'>Đọc truyện</a>";
                     echo "</div>";
                 }
             } else {
