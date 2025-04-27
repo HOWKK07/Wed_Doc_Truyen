@@ -7,7 +7,7 @@ require_once '../../config/connect.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký</title>
+    <title>Quên Mật Khẩu</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,7 +53,7 @@ require_once '../../config/connect.php';
         .form-container button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -62,7 +62,7 @@ require_once '../../config/connect.php';
         }
 
         .form-container button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
         }
 
         .form-container p {
@@ -83,21 +83,15 @@ require_once '../../config/connect.php';
 </head>
 <body>
     <div class="form-container">
-        <h1>Đăng Ký</h1>
-        <form action="http://localhost/Wed_Doc_Truyen/app/views/taiKhoan/register.php" method="POST">
-            <label for="ten_dang_nhap">Tên đăng nhập:</label>
-            <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" required>
-
-            <label for="email">Email:</label>
+        <h1>Quên Mật Khẩu</h1>
+        <form action="processForgotPassword.php" method="POST">
+            <label for="email">Nhập email của bạn:</label>
             <input type="email" id="email" name="email" required>
 
-            <label for="mat_khau">Mật khẩu:</label>
-            <input type="password" id="mat_khau" name="mat_khau" required>
-
-            <button type="submit">Đăng Ký</button>
+            <button type="submit">Gửi yêu cầu</button>
         </form>
 
-        <p>Đã có tài khoản? <a href="login.php">Đăng nhập ngay</a></p>
+        <p>Quay lại <a href="login.php">Đăng nhập</a></p>
     </div>
 </body>
 </html>

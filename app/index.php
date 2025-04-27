@@ -61,6 +61,9 @@ require_once 'config/connect.php'; // Kết nối cơ sở dữ liệu
     <!-- Header -->
     <?php include 'views/shares/header.php'; ?>
 
+    <!-- User Info -->
+
+
     <!-- Nội dung chính -->
     <div class="content">
         <h1>Danh Sách Truyện</h1>
