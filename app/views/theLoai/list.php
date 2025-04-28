@@ -1,10 +1,10 @@
 <?php
 session_start();
 require_once '../../config/connect.php';
+require_once '../../controllers/theLoaiController.php';
 
-// Lấy danh sách thể loại từ cơ sở dữ liệu
-$sql = "SELECT * FROM theloai";
-$result = $conn->query($sql);
+$controller = new TheLoaiController($conn);
+$theloais = $controller->layDanhSachTheLoai(); // Gọi phương thức thay vì truy cập trực tiếp thuộc tính
 ?>
 
 <!DOCTYPE html>
@@ -96,26 +96,22 @@ $result = $conn->query($sql);
                 <tr>
                     <th>ID</th>
                     <th>Tên Thể Loại</th>
+                    <th>Ngày Tạo</th>
                     <th>Hành Động</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result->num_rows > 0): ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo $row['id_theloai']; ?></td>
-                            <td><?php echo $row['ten_theloai']; ?></td>
-                            <td class="actions">
-                                <a href="edit.php?id=<?php echo $row['id_theloai']; ?>" class="edit">Sửa</a>
-                                <a href="delete.php?id=<?php echo $row['id_theloai']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa thể loại này?');">Xóa</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
+                <?php while ($row = $theloais->fetch_assoc()): ?>
                     <tr>
-                        <td colspan="3">Không có thể loại nào.</td>
+                        <td><?php echo $row['id_theloai']; ?></td>
+                        <td><?php echo $row['ten_theloai']; ?></td>
+                        <td><?php echo $row['ngay_tao']; ?></td>
+                        <td class="actions">
+                            <a href="edit.php?id=<?php echo $row['id_theloai']; ?>" class="edit">Sửa</a>
+                            <a href="delete.php?id=<?php echo $row['id_theloai']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa thể loại này?');">Xóa</a>
+                        </td>
                     </tr>
-                <?php endif; ?>
+                <?php endwhile; ?>
             </tbody>
         </table>
     </div>

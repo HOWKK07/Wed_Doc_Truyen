@@ -22,5 +22,27 @@ class TaiKhoanModel {
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
+
+    public function layTaiKhoanTheoEmail($email) {
+        $sql = "SELECT * FROM nguoidung WHERE email = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    public function capNhatToken($email, $token) {
+        $sql = "UPDATE nguoidung SET reset_token = ? WHERE email = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ss", $token, $email);
+        return $stmt->execute();
+    }
+
+    public function capNhatMatKhauBangToken($token, $mat_khau_moi) {
+        $sql = "UPDATE nguoidung SET mat_khau = ?, reset_token = NULL WHERE reset_token = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ss", $mat_khau_moi, $token);
+        return $stmt->execute();
+    }
 }
 ?>

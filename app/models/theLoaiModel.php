@@ -11,13 +11,12 @@ class TheLoaiModel {
         $sql = "INSERT INTO theloai (ten_theloai) VALUES (?)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $ten_theloai);
-
         return $stmt->execute();
     }
 
     // Lấy danh sách thể loại
     public function layDanhSachTheLoai() {
-        $sql = "SELECT * FROM theloai";
+        $sql = "SELECT * FROM theloai ORDER BY ngay_tao DESC";
         return $this->conn->query($sql);
     }
 

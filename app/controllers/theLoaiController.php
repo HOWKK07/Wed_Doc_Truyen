@@ -25,5 +25,39 @@ class TheLoaiController {
             }
         }
     }
+
+    // Xử lý sửa thể loại
+    public function suaTheLoai($id) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ten_theloai = $_POST['ten_theloai'];
+
+            // Gọi model để cập nhật thể loại
+            $result = $this->model->capNhatTheLoai($id, $ten_theloai);
+
+            if ($result) {
+                header("Location: list.php?success=1");
+                exit();
+            } else {
+                echo "Lỗi: Không thể cập nhật thể loại.";
+            }
+        }
+    }
+
+    // Xử lý xóa thể loại
+    public function xoaTheLoai($id) {
+        $result = $this->model->xoaTheLoai($id);
+
+        if ($result) {
+            header("Location: list.php?success=1");
+            exit();
+        } else {
+            echo "Lỗi: Không thể xóa thể loại.";
+        }
+    }
+
+    // Phương thức để lấy danh sách thể loại
+    public function layDanhSachTheLoai() {
+        return $this->model->layDanhSachTheLoai();
+    }
 }
 ?>

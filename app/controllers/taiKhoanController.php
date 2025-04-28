@@ -45,5 +45,43 @@ class TaiKhoanController {
             }
         }
     }
+
+    public function quenMatKhau() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = $_POST['email'];
+
+            // Kiểm tra email
+            $user = $this->model->layTaiKhoanTheoEmail($email);
+
+            if ($user) {
+                // Tạo token và lưu vào cơ sở dữ liệu
+                $token = bin2hex(random_bytes(16));
+                $this->model->capNhatToken($email, $token);
+
+                // Gửi email khôi phục mật khẩu (giả lập)
+                $resetLink = "http://localhost/Wed_Doc_Truyen/app/views/taiKhoan/resetPassword.php?token=$token";
+                echo "Một email khôi phục mật khẩu đã được gửi đến $email. <br>";
+                echo "Nhấn vào liên kết sau để đặt lại mật khẩu: <a href='$resetLink'>$resetLink</a>";
+            } else {
+                echo "Email không tồn tại trong hệ thống.";
+            }
+        }
+    }
+
+    public function datLaiMatKhau() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = $_POST['token'];
+            $mat_khau_moi = password_hash($_POST['mat_khau_moi'], PASSWORD_BCRYPT);
+
+            // Gọi model để kiểm tra token và cập nhật mật khẩu
+            $result = $this->model->capNhatMatKhauBangToken($token, $mat_khau_moi);
+
+            if ($result) {
+                echo "Mật khẩu đã được đặt lại thành công. <a href='login.php'>Đăng nhập</a>";
+            } else {
+                echo "Token không hợp lệ hoặc đã hết hạn.";
+            }
+        }
+    }
 }
 ?>

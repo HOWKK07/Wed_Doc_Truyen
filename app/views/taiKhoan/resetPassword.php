@@ -1,7 +1,9 @@
 <?php
 require_once '../../config/connect.php';
+require_once '../../controllers/taiKhoanController.php';
 
-$token = $_GET['token'];
+$controller = new TaiKhoanController($conn);
+$controller->datLaiMatKhau(); // Gọi controller để xử lý đặt lại mật khẩu
 ?>
 
 <!DOCTYPE html>
@@ -71,8 +73,8 @@ $token = $_GET['token'];
 <body>
     <div class="form-container">
         <h1>Đặt Lại Mật Khẩu</h1>
-        <form action="processResetPassword.php" method="POST">
-            <input type="hidden" name="token" value="<?php echo $token; ?>">
+        <form action="" method="POST">
+            <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['token']); ?>">
 
             <label for="mat_khau_moi">Mật khẩu mới:</label>
             <input type="password" id="mat_khau_moi" name="mat_khau_moi" required>

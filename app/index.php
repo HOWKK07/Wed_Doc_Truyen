@@ -37,6 +37,13 @@ require_once 'config/connect.php'; // Kết nối cơ sở dữ liệu
             background-color: #f9f9f9;
         }
 
+        .truyen-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
         .add-box {
             display: flex;
             justify-content: center;
@@ -76,8 +83,9 @@ require_once 'config/connect.php'; // Kết nối cơ sở dữ liệu
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     echo "<div class='truyen-item'>";
-                    echo "<p><strong>" . $row['ten_truyen'] . "</strong></p>";
-                    echo "<a href='views/truyen/chiTietTruyen.php?id_truyen=" . $row['id'] . "'>Đọc truyện</a>";
+                    echo "<img src='uploads/anhbia/" . htmlspecialchars($row['anh_bia']) . "' alt='" . htmlspecialchars($row['ten_truyen']) . "' class='truyen-anhbia'>";
+                    echo "<p><strong>" . htmlspecialchars($row['ten_truyen']) . "</strong></p>";
+                    echo "<a href='views/truyen/chiTietTruyen.php?id_truyen=" . $row['id_truyen'] . "'>Đọc truyện</a>";
                     echo "</div>";
                 }
             } else {
