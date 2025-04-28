@@ -3,11 +3,11 @@ require_once '../../config/connect.php';
 require_once '../../controllers/loaiTruyenController.php';
 
 $controller = new LoaiTruyenController($conn);
-$controller->themLoaiTruyen(); // Gọi controller để xử lý thêm loại truyện
 
-if ($_FILES["anh_bia"]["error"] !== UPLOAD_ERR_OK) {
-    echo "Lỗi tải lên: " . $_FILES["anh_bia"]["error"];
-    return;
+try {
+    $controller->themLoaiTruyen(); // Gọi controller để xử lý thêm loại truyện
+} catch (Exception $e) {
+    echo "<p style='color: red;'>Lỗi: " . htmlspecialchars($e->getMessage()) . "</p>";
 }
 ?>
 

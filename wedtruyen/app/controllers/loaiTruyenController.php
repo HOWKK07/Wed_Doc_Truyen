@@ -15,13 +15,15 @@ class LoaiTruyenController {
             $ten_loai_truyen = trim($_POST['ten_loai_truyen']);
 
             if (empty($ten_loai_truyen)) {
-                echo "Lỗi: Tên loại truyện không được để trống.";
-                return;
+                throw new Exception("Tên loại truyện không được để trống.");
             }
 
             // Gọi model để thêm loại truyện
-            $this->model->themLoaiTruyen($ten_loai_truyen);
-            header("Location: list.php");
+            if (!$this->model->themLoaiTruyen($ten_loai_truyen)) {
+                throw new Exception("Không thể thêm loại truyện. Vui lòng thử lại.");
+            }
+
+            header("Location: list.php?success=1");
             exit();
         }
     }
