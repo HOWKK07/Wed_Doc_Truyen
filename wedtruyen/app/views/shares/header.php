@@ -58,12 +58,16 @@
     }
 </style>
 
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
+
 <div class="menu">
     <a href="../../index.php" class="logo">Web Đọc Truyện</a>
     <div class="nav-links">
-        <a href="../../index.php" id="home-link">Trang chủ</a>
-        <a href="/Wed_Doc_Truyen/app/views/theLoai/list.php">Thể loại</a>
-        <a href="../loaiTruyen/list.php">Loại truyện</a> <!-- Thêm liên kết này -->
+        <a href="../../index.php" id="home-link" class="<?php echo $current_page === 'index.php' ? 'active' : ''; ?>">Trang chủ</a>
+        <a href="/Wed_Doc_Truyen/app/views/theLoai/list.php" class="<?php echo $current_page === 'list.php' ? 'active' : ''; ?>">Thể loại</a>
+        <a href="/Wed_Doc_Truyen/app/views/loaiTruyen/list.php">Loại truyện</a>
         <a href="/Wed_Doc_Truyen/app/views/taiKhoan/list.php">Quản lý tài khoản</a>
         <a href="/Wed_Doc_Truyen/app/views/truyen/add.php">Thêm truyện</a>
     </div>

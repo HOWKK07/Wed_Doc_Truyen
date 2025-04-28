@@ -19,10 +19,15 @@ class TruyenController {
             $trang_thai = $_POST['trang_thai'];
 
             // Xử lý upload ảnh bìa
-            $target_dir = "../../uploads/anhbia/";
-            $file_extension = pathinfo($_FILES["anh_bia"]["name"], PATHINFO_EXTENSION); // Lấy phần mở rộng của file
-            $file_name = $ten_truyen . '.' . $file_extension; // Đổi tên file thành tên truyện
+            $target_dir = __DIR__ . "/../../../uploads/anhbia/";
+            $file_extension = pathinfo($_FILES["anh_bia"]["name"], PATHINFO_EXTENSION);
+            $file_name = uniqid() . '.' . $file_extension; // Tạo tên file duy nhất
             $file_path = $target_dir . $file_name;
+
+            // Kiểm tra và tạo thư mục nếu chưa tồn tại
+            if (!is_dir($target_dir)) {
+                mkdir($target_dir, 0777, true);
+            }
 
             // Di chuyển file vào thư mục uploads/anhbia
             if (!move_uploaded_file($_FILES["anh_bia"]["tmp_name"], $file_path)) {
@@ -31,7 +36,7 @@ class TruyenController {
             }
 
             // Tạo thư mục cho truyện trong uploads/truyen
-            $truyen_folder = "../../uploads/truyen/" . $ten_truyen;
+            $truyen_folder = "/Wed_Doc_Truyen/uploads/truyen/" . $ten_truyen;
             if (!is_dir($truyen_folder)) {
                 if (!mkdir($truyen_folder, 0777, true)) {
                     echo "Lỗi: Không thể tạo thư mục cho truyện.";

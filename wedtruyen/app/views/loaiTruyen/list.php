@@ -4,7 +4,7 @@ require_once '../../config/connect.php';
 require_once '../../controllers/loaiTruyenController.php';
 
 $controller = new LoaiTruyenController($conn);
-$loaitruyens = $controller->layDanhSachLoaiTruyen();
+$loaiTruyens = $controller->layDanhSachLoaiTruyen(); // Gọi phương thức thay vì truy cập trực tiếp thuộc tính
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +12,7 @@ $loaitruyens = $controller->layDanhSachLoaiTruyen();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Loại Truyện</title>
+    <title>Danh Sách Loại Truyện</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -101,17 +101,23 @@ $loaitruyens = $controller->layDanhSachLoaiTruyen();
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $loaitruyens->fetch_assoc()): ?>
+                <?php if ($loaiTruyens->num_rows > 0): ?>
+                    <?php while ($row = $loaiTruyens->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $row['id_loai_truyen']; ?></td>
+                            <td><?php echo htmlspecialchars($row['ten_loai_truyen']); ?></td>
+                            <td><?php echo $row['ngay_tao']; ?></td>
+                            <td class="actions">
+                                <a href="edit.php?id=<?php echo $row['id_loai_truyen']; ?>" class="edit">Sửa</a>
+                                <a href="delete.php?id=<?php echo $row['id_loai_truyen']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa loại truyện này?');">Xóa</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
                     <tr>
-                        <td><?php echo $row['id_loai_truyen']; ?></td>
-                        <td><?php echo $row['ten_loai_truyen']; ?></td>
-                        <td><?php echo $row['ngay_tao']; ?></td>
-                        <td class="actions">
-                            <a href="edit.php?id=<?php echo $row['id_loai_truyen']; ?>" class="edit">Sửa</a>
-                            <a href="delete.php?id=<?php echo $row['id_loai_truyen']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa loại truyện này?');">Xóa</a>
-                        </td>
+                        <td colspan="4">Không có loại truyện nào.</td>
                     </tr>
-                <?php endwhile; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

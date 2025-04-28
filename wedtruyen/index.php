@@ -1,6 +1,6 @@
 <?php
 session_start(); // Bắt đầu session
-require_once 'config/connect.php'; // Kết nối cơ sở dữ liệu
+require_once 'app/config/connect.php'; // Nếu file nằm trong thư mục app/config/
 ?>
 
 <!DOCTYPE html>

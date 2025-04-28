@@ -4,6 +4,11 @@ require_once '../../controllers/loaiTruyenController.php';
 
 $controller = new LoaiTruyenController($conn);
 $controller->themLoaiTruyen(); // Gọi controller để xử lý thêm loại truyện
+
+if ($_FILES["anh_bia"]["error"] !== UPLOAD_ERR_OK) {
+    echo "Lỗi tải lên: " . $_FILES["anh_bia"]["error"];
+    return;
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,8 +80,8 @@ $controller->themLoaiTruyen(); // Gọi controller để xử lý thêm loại t
     <div class="content">
         <form action="" method="POST">
             <h1>Thêm Loại Truyện</h1>
-            <label for="ten_loaitruyen">Tên Loại Truyện:</label>
-            <input type="text" id="ten_loaitruyen" name="ten_loaitruyen" required>
+            <label for="ten_loai_truyen">Tên Loại Truyện:</label>
+            <input type="text" id="ten_loai_truyen" name="ten_loai_truyen" required>
             <button type="submit">Thêm</button>
         </form>
     </div>
