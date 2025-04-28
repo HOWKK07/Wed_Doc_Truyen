@@ -1,14 +1,18 @@
 <?php
+session_start();
 require_once '../../config/connect.php';
+require_once '../../controllers/chapterController.php';
 
-$id_chapter = $_GET['id_chapter'];
+// Kiểm tra tham số id_chuong
+if (!isset($_GET['id_chuong'])) {
+    die("Lỗi: Không tìm thấy ID chương.");
+}
 
-// Lấy thông tin chapter
-$sql = "SELECT * FROM chapter WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_chapter);
-$stmt->execute();
-$chapter = $stmt->get_result()->fetch_assoc();
+$id_chuong = $_GET['id_chuong']; // Lấy ID chương từ URL
+
+$controller = new ChapterController($conn);
+$chuong = $controller->layThongTinChapter($id_chuong); // Lấy thông tin chương
+$anh_chuongs = $controller->layDanhSachAnh($id_chuong); // Lấy danh sách ảnh
 ?>
 
 <!DOCTYPE html>
@@ -16,11 +20,73 @@ $chapter = $stmt->get_result()->fetch_assoc();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $chapter['ten_chapter']; ?></title>
+    <title><?php echo htmlspecialchars($chuong['tieu_de']); ?></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chapter-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .chapter-images {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chapter-images img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1><?php echo $chapter['ten_chapter']; ?></h1>
-    <p><?php echo nl2br($chapter['noi_dung']); ?></p>
-    <a href="chiTietTruyen.php?id_truyen=<?php echo $chapter['id_truyen']; ?>">Quay lại danh sách chapter</a>
+    <!-- Header -->
+    <?php include '../shares/header.php'; ?>
+
+    <!-- Nội dung chính -->
+    <div class="container">
+        <h1 class="chapter-title"><?php echo htmlspecialchars($chuong['tieu_de']); ?></h1>
+        <div class="chapter-images">
+            <?php while ($anh = $anh_chuongs->fetch_assoc()): ?>
+                <img src="../../<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
+            <?php endwhile; ?>
+        </div>
+        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-link">Quay lại danh sách chương</a>
+    </div>
+
+    <!-- Footer -->
+    <?php include '../shares/footer.php'; ?>
 </body>
 </html>
