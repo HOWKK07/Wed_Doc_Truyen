@@ -7,14 +7,11 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     $controller = new LoaiTruyenController($conn);
     $loaiTruyen = $controller->layLoaiTruyenTheoId($id);
 
-    if (!$loaiTruyen) {
-        echo "Lỗi: Không tìm thấy loại truyện với ID này.";
-        exit();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->suaLoaiTruyen($id);
     }
-
-    $controller->suaLoaiTruyen($id);
 } else {
-    echo "Lỗi: ID loại truyện không hợp lệ.";
+    echo "Lỗi: ID không hợp lệ.";
     exit();
 }
 ?>

@@ -114,7 +114,6 @@ require_once '../../config/connect.php';
         </div>
 
         <p>Bạn chưa có tài khoản? <a href="register.php">Đăng ký ngay</a></p>
-        <p><a href="login.php">Đăng nhập</a></p>
     </div>
 </body>
 </html>
