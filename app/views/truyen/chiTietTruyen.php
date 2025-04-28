@@ -141,37 +141,66 @@ $chuongs = $stmt_chuong->get_result();
             color: #333;
         }
 
-        .chapter-list ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .chapter-list li {
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
             margin-bottom: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
         }
 
-        .chapter-list a {
-            text-decoration: none;
+        .chapter-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .chapter-item .chapter-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-item .chapter-info .chapter-title {
+            font-size: 16px;
+            font-weight: bold;
             color: #007bff;
+            text-decoration: none;
         }
 
-        .chapter-list a:hover {
+        .chapter-item .chapter-info .chapter-title:hover {
             text-decoration: underline;
         }
 
-        .add-chapter-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
+        .chapter-item .chapter-info .chapter-meta {
+            font-size: 14px;
+            color: #555;
         }
 
-        .add-chapter-btn:hover {
-            background-color: #0056b3;
+        .chapter-item .chapter-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chapter-item .chapter-actions span {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .chapter-item .chapter-actions .comment-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .chapter-item .chapter-actions .comment-count i {
+            font-size: 16px;
+            color: #007bff;
         }
     </style>
 </head>
@@ -199,22 +228,30 @@ $chuongs = $stmt_chuong->get_result();
                 <div class="truyen-actions">
                     <button class="add-to-library">Thêm vào thư viện</button>
                     <button class="start-reading">Bắt đầu đọc</button>
-                    <a href="addChapter.php?id_truyen=<?php echo $id_truyen; ?>" class="add-chapter-btn">Thêm Chapter</a>
+                    <a href="../chapter/add.php?id_truyen=<?php echo $id_truyen; ?>&ten_truyen=<?php echo urlencode($truyen['ten_truyen']); ?>" class="add-chapter-btn">Thêm Chapter</a>
                 </div>
             </div>
         </div>
 
         <div class="chapter-list">
-            <h2>Danh sách Chapter</h2>
-            <ul>
-                <?php while ($chuong = $chuongs->fetch_assoc()): ?>
-                    <li>
-                        <a href="docchapter.php?id_chuong=<?php echo $chuong['id_chuong']; ?>">
+            <h2>Danh sách Chương</h2>
+            <?php while ($chuong = $chuongs->fetch_assoc()): ?>
+                <div class="chapter-item">
+                    <div class="chapter-info">
+                        <a href="docchapter.php?id_chuong=<?php echo $chuong['id_chuong']; ?>" class="chapter-title">
                             Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>: <?php echo htmlspecialchars($chuong['tieu_de']); ?>
                         </a>
-                    </li>
-                <?php endwhile; ?>
-            </ul>
+                        <span class="chapter-meta">Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'])); ?></span>
+                    </div>
+                    <div class="chapter-actions">
+                        <span><?php echo rand(0, 100); ?> lượt xem</span>
+                        <div class="comment-count">
+                            <i class="fas fa-comment"></i>
+                            <span><?php echo rand(0, 10); ?> bình luận</span>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
         </div>
     </div>
 
