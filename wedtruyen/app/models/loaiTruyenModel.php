@@ -9,6 +9,11 @@ class LoaiTruyenModel {
     public function themLoaiTruyen($ten_loai_truyen) {
         $sql = "INSERT INTO loai_truyen (ten_loai_truyen) VALUES (?)";
         $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception("Lỗi chuẩn bị truy vấn: " . $this->conn->error);
+        }
+
         $stmt->bind_param("s", $ten_loai_truyen);
 
         if (!$stmt->execute()) {
