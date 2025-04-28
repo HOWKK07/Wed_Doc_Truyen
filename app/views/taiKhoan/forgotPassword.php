@@ -1,5 +1,9 @@
 <?php
 require_once '../../config/connect.php';
+require_once '../../controllers/taiKhoanController.php';
+
+$controller = new TaiKhoanController($conn);
+$controller->quenMatKhau(); // Gọi trực tiếp controller để xử lý quên mật khẩu
 ?>
 
 <!DOCTYPE html>

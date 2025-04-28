@@ -1,5 +1,9 @@
 <?php
 require_once '../../config/connect.php';
+require_once '../../controllers/taiKhoanController.php';
+
+$controller = new TaiKhoanController($conn);
+$controller->dangKy(); // Gọi trực tiếp controller để xử lý đăng ký
 ?>
 
 <!DOCTYPE html>
