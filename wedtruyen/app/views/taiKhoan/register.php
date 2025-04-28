@@ -3,7 +3,15 @@ require_once '../../config/connect.php';
 require_once '../../controllers/taiKhoanController.php';
 
 $controller = new TaiKhoanController($conn);
-$controller->dangKy(); // Gọi trực tiếp controller để xử lý đăng ký
+$error_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $controller->dangKy();
+    } catch (Exception $e) {
+        $error_message = $e->getMessage();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -88,7 +96,10 @@ $controller->dangKy(); // Gọi trực tiếp controller để xử lý đăng k
 <body>
     <div class="form-container">
         <h1>Đăng Ký</h1>
-        <form action="http://localhost/Wed_Doc_Truyen/app/views/taiKhoan/register.php" method="POST">
+        <?php if (!empty($error_message)): ?>
+            <p style="color: red; text-align: center;"><?php echo htmlspecialchars($error_message); ?></p>
+        <?php endif; ?>
+        <form action="" method="POST">
             <label for="ten_dang_nhap">Tên đăng nhập:</label>
             <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" required>
 

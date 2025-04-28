@@ -1,5 +1,18 @@
 <?php
+session_start();
 require_once '../../config/connect.php';
+require_once '../../controllers/taiKhoanController.php';
+
+$controller = new TaiKhoanController($conn);
+$error_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $controller->dangNhap();
+    } catch (Exception $e) {
+        $error_message = $e->getMessage();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +112,10 @@ require_once '../../config/connect.php';
 <body>
     <div class="form-container">
         <h1>Đăng Nhập</h1>
-        <form action="processLogin.php" method="POST">
+        <?php if (!empty($error_message)): ?>
+            <p style="color: red; text-align: center;"><?php echo htmlspecialchars($error_message); ?></p>
+        <?php endif; ?>
+        <form action="" method="POST">
             <label for="ten_dang_nhap">Tên đăng nhập:</label>
             <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" required>
 

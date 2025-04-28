@@ -2,6 +2,7 @@
 session_start();
 require_once '../../config/connect.php';
 require_once '../../controllers/chapterController.php';
+require_once '../../models/anhChuongModel.php';
 
 // Kiểm tra tham số id_chuong
 if (!isset($_GET['id_chuong'])) {
@@ -10,9 +11,14 @@ if (!isset($_GET['id_chuong'])) {
 
 $id_chuong = $_GET['id_chuong']; // Lấy ID chương từ URL
 
-$controller = new ChapterController($conn);
-$chuong = $controller->layThongTinChapter($id_chuong); // Lấy thông tin chương
-$anh_chuongs = $controller->layDanhSachAnh($id_chuong); // Lấy danh sách ảnh
+$chapterController = new ChapterController($conn);
+$anhChuongModel = new AnhChuongModel($conn);
+
+// Lấy thông tin chương
+$chuong = $chapterController->layThongTinChapter($id_chuong);
+
+// Lấy danh sách ảnh của chương
+$anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong);
 ?>
 
 <!DOCTYPE html>
@@ -80,7 +86,7 @@ $anh_chuongs = $controller->layDanhSachAnh($id_chuong); // Lấy danh sách ản
         <h1 class="chapter-title"><?php echo htmlspecialchars($chuong['tieu_de']); ?></h1>
         <div class="chapter-images">
             <?php while ($anh = $anh_chuongs->fetch_assoc()): ?>
-                <img src="../../<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
+                <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>?t=<?php echo time(); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
             <?php endwhile; ?>
         </div>
         <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-link">Quay lại danh sách chương</a>

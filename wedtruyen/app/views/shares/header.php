@@ -3,7 +3,7 @@
         background-color: #007bff;
         color: white;
         padding: 10px 20px;
-        display: flex !important; /* Đảm bảo menu hiển thị theo chiều ngang */
+        display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -17,7 +17,7 @@
     }
 
     .menu .nav-links {
-        display: flex; /* Đảm bảo các liên kết nằm ngang */
+        display: flex;
         gap: 15px;
     }
 
@@ -34,7 +34,7 @@
     }
 
     .menu .user-info {
-        display: flex; /* Đảm bảo thông tin người dùng nằm ngang */
+        display: flex;
         align-items: center;
         gap: 10px;
     }
@@ -63,34 +63,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
 <div class="menu">
-    <a href="../../index.php" class="logo">Web Đọc Truyện</a>
+    <!-- Logo sẽ đóng vai trò là nút "Trang chủ" -->
+    <a href="/Wed_Doc_Truyen/wedtruyen/index.php" class="logo">Web Đọc Truyện</a>
     <div class="nav-links">
-        <a href="../../index.php" id="home-link" class="<?php echo $current_page === 'index.php' ? 'active' : ''; ?>">Trang chủ</a>
-        <a href="/Wed_Doc_Truyen/app/views/theLoai/list.php" class="<?php echo $current_page === 'list.php' ? 'active' : ''; ?>">Thể loại</a>
-        <a href="/Wed_Doc_Truyen/app/views/loaiTruyen/list.php">Loại truyện</a>
-        <a href="/Wed_Doc_Truyen/app/views/taiKhoan/list.php">Quản lý tài khoản</a>
-        <a href="/Wed_Doc_Truyen/app/views/truyen/add.php">Thêm truyện</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/theLoai/list.php">Thể loại</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php">Loại truyện</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/add.php">Thêm Truyện</a>
+        <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/list.php">Quản Lý Tài Khoản</a> <!-- Nút quản lý tài khoản -->
+        <?php endif; ?>
     </div>
     <div class="user-info">
         <?php if (isset($_SESSION['user'])): ?>
-            <span>Xin chào, <?php echo $_SESSION['user']['ten_dang_nhap']; ?>!</span>
-            <a href="/Wed_Doc_Truyen/app/views/taiKhoan/logout.php">Đăng xuất</a>
+            <span>Xin chào, <?php echo htmlspecialchars($_SESSION['user']['ten_dang_nhap']); ?>!</span>
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/logout.php">Đăng xuất</a>
         <?php else: ?>
-            <a href="/Wed_Doc_Truyen/app/views/taiKhoan/login.php">Đăng nhập</a>
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/login.php">Đăng nhập</a>
         <?php endif; ?>
     </div>
 </div>
-
-<script>
-    // Kiểm tra URL hiện tại
-    const homeLink = document.getElementById('home-link');
-    const currentUrl = window.location.href;
-
-    // Nếu URL hiện tại là trang chủ, thêm sự kiện để reset trang
-    if (currentUrl.includes('index.php')) {
-        homeLink.addEventListener('click', function (event) {
-            event.preventDefault(); // Ngăn điều hướng mặc định
-            window.location.reload(); // Tải lại trang
-        });
-    }
-</script>
