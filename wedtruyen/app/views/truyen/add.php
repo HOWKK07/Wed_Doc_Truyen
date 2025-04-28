@@ -12,7 +12,13 @@ $sqlTheLoai = "SELECT * FROM theloai";
 $resultTheLoai = $conn->query($sqlTheLoai);
 
 $controller = new TruyenController($conn);
-$controller->themTruyen(); // Gọi trực tiếp controller để xử lý thêm truyện
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $controller->themTruyen();
+    } catch (Exception $e) {
+        echo "<p style='color: red;'>Lỗi: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -185,7 +191,9 @@ $controller->themTruyen(); // Gọi trực tiếp controller để xử lý thê
                 <label for="loai_truyen">Loại truyện</label>
                 <select id="loai_truyen" name="loai_truyen" required>
                     <?php while ($row = $resultLoaiTruyen->fetch_assoc()): ?>
-                        <option value="<?php echo $row['id_loai_truyen']; ?>"><?php echo $row['ten_loai_truyen']; ?></option>
+                        <option value="<?php echo htmlspecialchars($row['id_loai_truyen']); ?>">
+                            <?php echo htmlspecialchars($row['ten_loai_truyen']); ?>
+                        </option>
                     <?php endwhile; ?>
                 </select>
 

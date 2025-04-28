@@ -12,37 +12,49 @@ class TaiKhoanController {
     // Xử lý đăng ký
     public function dangKy() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ten_dang_nhap = $_POST['ten_dang_nhap'];
-            $email = $_POST['email'];
+            $ten_dang_nhap = trim($_POST['ten_dang_nhap']);
+            $email = trim($_POST['email']);
             $mat_khau = password_hash($_POST['mat_khau'], PASSWORD_BCRYPT); // Mã hóa mật khẩu
+
+            if (empty($ten_dang_nhap) || empty($email) || empty($mat_khau)) {
+                throw new Exception("Vui lòng điền đầy đủ thông tin.");
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("Email không hợp lệ.");
+            }
 
             $result = $this->model->dangKy($ten_dang_nhap, $email, $mat_khau);
 
-            if ($result) {
-                header("Location: login.php?success=1");
-                exit();
-            } else {
-                echo "Lỗi: Không thể đăng ký tài khoản.";
+            if (!$result) {
+                throw new Exception("Tên đăng nhập hoặc email đã tồn tại.");
             }
+
+            header("Location: login.php?success=1");
+            exit();
         }
     }
 
     // Xử lý đăng nhập
     public function dangNhap() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ten_dang_nhap = $_POST['ten_dang_nhap'];
+            $ten_dang_nhap = trim($_POST['ten_dang_nhap']);
             $mat_khau = $_POST['mat_khau'];
+
+            if (empty($ten_dang_nhap) || empty($mat_khau)) {
+                throw new Exception("Vui lòng điền đầy đủ thông tin.");
+            }
 
             $user = $this->model->layTaiKhoanTheoTenDangNhap($ten_dang_nhap);
 
-            if ($user && password_verify($mat_khau, $user['mat_khau'])) {
-                session_start();
-                $_SESSION['user'] = $user;
-                header("Location: ../../index.php");
-                exit();
-            } else {
-                echo "Tên đăng nhập hoặc mật khẩu không đúng.";
+            if (!$user || !password_verify($mat_khau, $user['mat_khau'])) {
+                throw new Exception("Tên đăng nhập hoặc mật khẩu không đúng.");
             }
+
+            session_start();
+            $_SESSION['user'] = $user;
+            header("Location: ../../index.php");
+            exit();
         }
     }
 

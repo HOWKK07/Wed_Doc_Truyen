@@ -36,7 +36,7 @@ class TruyenController {
             }
 
             // Tạo thư mục cho truyện trong uploads/truyen
-            $truyen_folder = "/Wed_Doc_Truyen/uploads/truyen/" . $ten_truyen;
+            $truyen_folder = "/Wed_Doc_Truyen/wedtruyen/uploads/truyen/" . $ten_truyen;
             if (!is_dir($truyen_folder)) {
                 if (!mkdir($truyen_folder, 0777, true)) {
                     echo "Lỗi: Không thể tạo thư mục cho truyện.";

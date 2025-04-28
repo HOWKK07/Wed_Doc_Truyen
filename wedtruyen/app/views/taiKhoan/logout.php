@@ -1,6 +1,8 @@
 <?php
-session_start(); // Bắt đầu session
-session_destroy(); // Hủy session
-header("Location: /Wed_Doc_Truyen/app/index.php"); // Chuyển hướng về trang chủ
+session_start();
+if (isset($_SESSION['user'])) {
+    session_destroy();
+}
+header("Location: /Wed_Doc_Truyen/wedtruyen/index.php");
 exit();
 ?>

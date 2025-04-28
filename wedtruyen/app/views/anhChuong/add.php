@@ -1,20 +1,20 @@
 <?php
 session_start();
 require_once '../../config/connect.php';
-require_once '../../controllers/chapterController.php';
+require_once '../../controllers/anhChuongController.php';
 
-if (!isset($_GET['id_truyen']) || empty($_GET['id_truyen'])) {
-    die("Lỗi: Không tìm thấy ID truyện.");
+if (!isset($_GET['id_chuong']) || empty($_GET['id_chuong'])) {
+    die("Lỗi: Không tìm thấy ID chương.");
 }
 
-$id_truyen = $_GET['id_truyen'];
-$ten_truyen = isset($_GET['ten_truyen']) ? urldecode($_GET['ten_truyen']) : '';
+$id_chuong = $_GET['id_chuong'];
+$controller = new AnhChuongController($conn);
 
-$controller = new ChapterController($conn);
+$so_trang_bat_dau = isset($_GET['so_trang_bat_dau']) ? (int)$_GET['so_trang_bat_dau'] : 1;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $controller->themChapter();
+        $controller->themNhieuAnh();
     } catch (Exception $e) {
         echo "<p style='color: red;'>" . $e->getMessage() . "</p>";
     }
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Chapter</title>
+    <title>Thêm Ảnh</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold;
         }
 
-        form input, form textarea {
+        form input {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -88,17 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Nội dung chính -->
     <div class="content">
-        <form action="" method="POST">
-            <h1>Thêm Chapter</h1>
-            <p><strong>Truyện:</strong> <?php echo htmlspecialchars($ten_truyen); ?></p>
-            <input type="hidden" name="id_truyen" value="<?php echo $_GET['id_truyen']; ?>">
-            <label for="so_chuong">Số chương:</label>
-            <input type="number" id="so_chuong" name="so_chuong" required>
+        <form action="" method="POST" enctype="multipart/form-data">
+            <h1>Thêm Ảnh</h1>
+            <input type="hidden" name="id_chuong" value="<?php echo htmlspecialchars($id_chuong); ?>">
 
-            <label for="tieu_de">Tiêu đề:</label>
-            <input type="text" id="tieu_de" name="tieu_de" required>
+            <label for="so_trang">Số trang bắt đầu:</label>
+            <input type="number" id="so_trang" name="so_trang" value="<?php echo $so_trang_bat_dau; ?>" required>
 
-            <button type="submit">Thêm Chapter</button>
+            <label for="anh">Chọn ảnh (có thể chọn nhiều ảnh):</label>
+            <input type="file" id="anh" name="anh[]" accept="image/*" multiple required>
+
+            <button type="submit">Thêm Ảnh</button>
         </form>
     </div>
 

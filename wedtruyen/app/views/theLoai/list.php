@@ -4,7 +4,7 @@ require_once '../../config/connect.php';
 require_once '../../controllers/theLoaiController.php';
 
 $controller = new TheLoaiController($conn);
-$theloais = $controller->layDanhSachTheLoai(); // Gọi phương thức thay vì truy cập trực tiếp thuộc tính
+$theloais = $controller->layDanhSachTheLoai();
 ?>
 
 <!DOCTYPE html>
@@ -101,17 +101,23 @@ $theloais = $controller->layDanhSachTheLoai(); // Gọi phương thức thay vì
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $theloais->fetch_assoc()): ?>
+                <?php if ($theloais->num_rows > 0): ?>
+                    <?php while ($row = $theloais->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $row['id_theloai']; ?></td>
+                            <td><?php echo htmlspecialchars($row['ten_theloai']); ?></td>
+                            <td><?php echo $row['ngay_tao']; ?></td>
+                            <td class="actions">
+                                <a href="edit.php?id=<?php echo $row['id_theloai']; ?>" class="edit">Sửa</a>
+                                <a href="delete.php?id=<?php echo $row['id_theloai']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa thể loại này?');">Xóa</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
                     <tr>
-                        <td><?php echo $row['id_theloai']; ?></td>
-                        <td><?php echo $row['ten_theloai']; ?></td>
-                        <td><?php echo $row['ngay_tao']; ?></td>
-                        <td class="actions">
-                            <a href="edit.php?id=<?php echo $row['id_theloai']; ?>" class="edit">Sửa</a>
-                            <a href="delete.php?id=<?php echo $row['id_theloai']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa thể loại này?');">Xóa</a>
-                        </td>
+                        <td colspan="4">Không có thể loại nào.</td>
                     </tr>
-                <?php endwhile; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

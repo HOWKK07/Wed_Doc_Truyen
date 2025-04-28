@@ -2,13 +2,11 @@
 session_start();
 require_once '../../config/connect.php';
 
-// Kiểm tra xem người dùng đã đăng nhập và có vai trò admin chưa
 if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
     header("Location: ../../index.php");
     exit();
 }
 
-// Lấy danh sách tài khoản từ cơ sở dữ liệu
 $sql = "SELECT * FROM nguoidung";
 $result = $conn->query($sql);
 ?>
@@ -82,6 +80,9 @@ $result = $conn->query($sql);
     <!-- Nội dung chính -->
     <div class="content">
         <h1>Quản Lý Tài Khoản</h1>
+        <?php if (isset($_GET['success'])): ?>
+            <p style="color: green; text-align: center;">Thao tác thành công!</p>
+        <?php endif; ?>
         <table>
             <thead>
                 <tr>
@@ -98,10 +99,10 @@ $result = $conn->query($sql);
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo $row['id_nguoidung']; ?></td>
-                            <td><?php echo $row['ten_dang_nhap']; ?></td>
-                            <td><?php echo $row['email']; ?></td>
-                            <td><?php echo $row['vai_tro']; ?></td>
-                            <td><?php echo $row['ngay_tao']; ?></td>
+                            <td><?php echo htmlspecialchars($row['ten_dang_nhap']); ?></td>
+                            <td><?php echo htmlspecialchars($row['email']); ?></td>
+                            <td><?php echo htmlspecialchars($row['vai_tro']); ?></td>
+                            <td><?php echo htmlspecialchars($row['ngay_tao']); ?></td>
                             <td class="actions">
                                 <a href="edit.php?id=<?php echo $row['id_nguoidung']; ?>" class="edit">Sửa</a>
                                 <a href="delete.php?id=<?php echo $row['id_nguoidung']; ?>" class="delete" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');">Xóa</a>

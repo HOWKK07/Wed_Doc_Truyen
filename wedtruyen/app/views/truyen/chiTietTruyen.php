@@ -211,7 +211,7 @@ $chuongs = $stmt_chuong->get_result();
     <!-- Nội dung chính -->
     <div class="container">
         <div class="truyen-header">
-            <img src="../../uploads/anhbia/<?php echo htmlspecialchars($truyen['anh_bia']); ?>" alt="<?php echo htmlspecialchars($truyen['ten_truyen']); ?>">
+            <img src="/Wed_Doc_Truyen/uploads/anhbia/<?php echo htmlspecialchars($truyen['anh_bia']); ?>" alt="<?php echo htmlspecialchars($truyen['ten_truyen']); ?>" style="width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <div class="truyen-info">
                 <h1><?php echo htmlspecialchars($truyen['ten_truyen']); ?></h1>
                 <p><strong>Tác giả:</strong> <?php echo htmlspecialchars($truyen['tac_gia']); ?></p>
@@ -244,11 +244,10 @@ $chuongs = $stmt_chuong->get_result();
                         <span class="chapter-meta">Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'])); ?></span>
                     </div>
                     <div class="chapter-actions">
-                        <span><?php echo rand(0, 100); ?> lượt xem</span>
-                        <div class="comment-count">
-                            <i class="fas fa-comment"></i>
-                            <span><?php echo rand(0, 10); ?> bình luận</span>
-                        </div>
+                        <a href="../anhChuong/add.php?id_chuong=<?php echo $chuong['id_chuong']; ?>" class="add-image-btn" style="background-color: #28a745; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;">Thêm Ảnh</a>
+                        <a href="../anhChuong/list.php?id_chuong=<?php echo $chuong['id_chuong']; ?>" class="list-image-btn" style="background-color: #17a2b8; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;">Danh Sách Ảnh</a>
+                        <a href="../chapter/edit.php?id_chuong=<?php echo $chuong['id_chuong']; ?>&id_truyen=<?php echo $id_truyen; ?>" class="edit-btn" style="background-color: #ffc107; color: black; padding: 5px 10px; border-radius: 5px; text-decoration: none;">Sửa</a>
+                        <a href="../chapter/delete.php?id_chuong=<?php echo $chuong['id_chuong']; ?>&id_truyen=<?php echo $id_truyen; ?>" class="delete-btn" style="background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
                     </div>
                 </div>
             <?php endwhile; ?>
