@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold;
         }
 
-        form input {
+        form input, form select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -145,19 +145,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Nội dung chính -->
     <div class="content">
         <form action="" method="POST" enctype="multipart/form-data">
-            <h1>Sửa Ảnh</h1>
-
+            <h1>Sửa Ảnh Chương</h1>
             <div class="current-image">
                 <p>Ảnh hiện tại:</p>
-                <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>?t=<?php echo time(); ?>" alt="Ảnh hiện tại">
+                <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Ảnh hiện tại">
             </div>
-
             <label for="so_trang">Số trang:</label>
             <input type="number" id="so_trang" name="so_trang" value="<?php echo htmlspecialchars($anh['so_trang']); ?>" required>
-
             <label for="anh_moi">Thay ảnh mới (nếu cần):</label>
             <input type="file" id="anh_moi" name="anh_moi" accept="image/*">
-
             <button type="submit">Cập Nhật</button>
         </form>
     </div>

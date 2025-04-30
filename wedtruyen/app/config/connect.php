@@ -1,4 +1,5 @@
 <?php
+// filepath: app/config/connect.php
 
 $host = "localhost";
 $username = "root";
