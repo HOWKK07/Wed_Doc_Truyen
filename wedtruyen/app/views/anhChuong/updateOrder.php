@@ -1,9 +1,10 @@
 <?php
+session_start();
 require_once '../../config/connect.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!$data) {
+if (!is_array($data)) {
     echo json_encode(['success' => false, 'message' => 'Dữ liệu không hợp lệ.']);
     exit();
 }
@@ -15,6 +16,7 @@ try {
         $id_anh = $item['id'];
         $so_trang = $item['so_trang'];
 
+        // Cập nhật thứ tự trang
         $sql = "UPDATE anh_chuong SET so_trang = ? WHERE id_anh = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $so_trang, $id_anh);

@@ -18,7 +18,7 @@ $anhChuongModel = new AnhChuongModel($conn);
 $chuong = $chapterController->layThongTinChapter($id_chuong);
 
 // Lấy danh sách ảnh của chương
-$anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong);
+$anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong, 'ASC'); // Sắp xếp tăng dần
 ?>
 
 <!DOCTYPE html>

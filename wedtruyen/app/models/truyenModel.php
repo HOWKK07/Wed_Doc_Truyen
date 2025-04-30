@@ -15,18 +15,19 @@ class TruyenModel {
      * @param string|null $anh_bia
      * @param string $mo_ta
      * @param string $trang_thai
+     * @param int $nam_phat_hanh
      * @return int ID của truyện vừa thêm
      */
-    public function themTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai) {
-        $sql = "INSERT INTO truyen (ten_truyen, tac_gia, id_loai_truyen, anh_bia, mo_ta, trang_thai) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+    public function themTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh) {
+        $sql = "INSERT INTO truyen (ten_truyen, tac_gia, id_loai_truyen, anh_bia, mo_ta, trang_thai, nam_phat_hanh) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
 
         if (!$stmt) {
             throw new Exception("Lỗi chuẩn bị truy vấn: " . $this->conn->error);
         }
 
-        $stmt->bind_param("ssisss", $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai);
+        $stmt->bind_param("ssisssi", $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
 
         // Kiểm tra lỗi khi thực thi truy vấn
         if (!$stmt->execute()) {
@@ -45,14 +46,20 @@ class TruyenModel {
      * @param string|null $anh_bia
      * @param string $mo_ta
      * @param string $trang_thai
+     * @param int $nam_phat_hanh
      */
-    public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai) {
-        $sql = "UPDATE truyen SET ten_truyen = ?, tac_gia = ?, id_loai_truyen = ?, anh_bia = ?, mo_ta = ?, trang_thai = ? WHERE id_truyen = ?";
+    public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh) {
+        $sql = "UPDATE truyen SET ten_truyen = ?, tac_gia = ?, id_loai_truyen = ?, anh_bia = ?, mo_ta = ?, trang_thai = ?, nam_phat_hanh = ? WHERE id_truyen = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ssisssi", $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $id_truyen);
+
+        if (!$stmt) {
+            throw new Exception("Lỗi chuẩn bị truy vấn: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("ssisssii", $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh, $id_truyen);
 
         if (!$stmt->execute()) {
-            throw new Exception("Không thể cập nhật truyện.");
+            throw new Exception("Không thể cập nhật truyện: " . $stmt->error);
         }
     }
 

@@ -253,6 +253,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="anh_bia">Ảnh bìa</label>
                 <input type="file" id="anh_bia" name="anh_bia" accept="image/*">
 
+                <!-- Thêm trường nhập liệu cho năm phát hành -->
+                <label for="nam_phat_hanh">Năm phát hành</label>
+                <input type="number" id="nam_phat_hanh" name="nam_phat_hanh" min="1900" max="<?php echo date('Y'); ?>" value="<?php echo htmlspecialchars($truyen['nam_phat_hanh']); ?>" required>
+
                 <label for="mo_ta">Mô tả</label>
                 <textarea id="mo_ta" name="mo_ta" rows="5" required><?php echo htmlspecialchars($truyen['mo_ta']); ?></textarea>
 

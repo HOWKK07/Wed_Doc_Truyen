@@ -20,7 +20,8 @@ class TruyenController {
                 $id_loai_truyen = $_POST['id_loai_truyen'];
                 $mo_ta = safeOutput($_POST['mo_ta']);
                 $trang_thai = $_POST['trang_thai'];
-                $the_loai = $_POST['the_loai'] ?? []; // Lấy danh sách thể loại từ form
+                $nam_phat_hanh = $_POST['nam_phat_hanh']; // Lấy năm phát hành
+                $the_loai = $_POST['the_loai'] ?? [];
                 $anh_bia = null;
 
                 // Xử lý tải lên ảnh bìa
@@ -37,7 +38,7 @@ class TruyenController {
                 }
 
                 // Gọi model để thêm truyện
-                $id_truyen = $this->model->themTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai);
+                $id_truyen = $this->model->themTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
 
                 // Gọi model để thêm thể loại
                 foreach ($the_loai as $id_theloai) {
@@ -114,9 +115,10 @@ class TruyenController {
      * @param string $mo_ta
      * @param int $trang_thai
      * @param array $the_loai
+     * @param int $nam_phat_hanh
      */
-    public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $the_loai) {
-        $this->model->capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai);
+    public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $the_loai, $nam_phat_hanh) {
+        $this->model->capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
 
         // Cập nhật thể loại
         $this->model->xoaTheLoaiTruyen($id_truyen);

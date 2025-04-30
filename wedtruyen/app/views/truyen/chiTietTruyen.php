@@ -18,11 +18,20 @@ $stmt->execute();
 $truyen = $stmt->get_result()->fetch_assoc();
 
 // Lấy danh sách chương
-$sql_chuong = "SELECT * FROM chuong WHERE id_truyen = ? ORDER BY so_chuong ASC";
+$sql_chuong = "SELECT * FROM chuong WHERE id_truyen = ? ORDER BY so_chuong DESC";
 $stmt_chuong = $conn->prepare($sql_chuong);
 $stmt_chuong->bind_param("i", $id_truyen);
 $stmt_chuong->execute();
 $chuongs = $stmt_chuong->get_result();
+
+// Lấy ID của chapter có số chapter nhỏ nhất
+$sql_min_chapter = "SELECT id_chuong FROM chuong WHERE id_truyen = ? ORDER BY so_chuong ASC LIMIT 1";
+$stmt_min_chapter = $conn->prepare($sql_min_chapter);
+$stmt_min_chapter->bind_param("i", $id_truyen);
+$stmt_min_chapter->execute();
+$result_min_chapter = $stmt_min_chapter->get_result();
+$min_chapter = $result_min_chapter->fetch_assoc();
+$id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nhất hoặc null nếu không có
 ?>
 
 <!DOCTYPE html>
@@ -115,12 +124,24 @@ $chuongs = $stmt_chuong->get_result();
         }
 
         .truyen-actions .start-reading {
-            background-color: #007bff;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745; /* Màu xanh lá */
             color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
         }
 
         .truyen-actions .start-reading:hover {
-            background-color: #0056b3;
+            background-color: #218838; /* Màu xanh lá đậm hơn khi hover */
+        }
+
+        .truyen-actions .start-reading:disabled {
+            background-color: #6c757d; /* Màu xám khi bị vô hiệu hóa */
+            cursor: not-allowed;
         }
 
         .truyen-actions .add-chapter-btn {
@@ -225,10 +246,16 @@ $chuongs = $stmt_chuong->get_result();
                     }
                     ?>
                 </div>
+                <p><strong>Năm xuất bản:</strong> <?php echo htmlspecialchars($truyen['nam_phat_hanh']); ?></p>
+                <p><strong>Trạng thái:</strong> <?php echo htmlspecialchars($truyen['trang_thai']); ?></p>
                 <p><strong>Mô tả:</strong> <?php echo nl2br(htmlspecialchars($truyen['mo_ta'])); ?></p>
                 <div class="truyen-actions">
                     <button class="add-to-library">Thêm vào thư viện</button>
-                    <button class="start-reading">Bắt đầu đọc</button>
+                    <?php if ($id_chuong_min): ?>
+                        <a href="../chapter/docChapter.php?id_chuong=<?php echo $id_chuong_min; ?>" class="start-reading">Bắt đầu đọc</a>
+                    <?php else: ?>
+                        <button class="start-reading" disabled>Không có chương để đọc</button>
+                    <?php endif; ?>
                     <a href="../chapter/add.php?id_truyen=<?php echo $id_truyen; ?>&ten_truyen=<?php echo urlencode($truyen['ten_truyen']); ?>" class="add-chapter-btn">Thêm Chapter</a>
                 </div>
             </div>

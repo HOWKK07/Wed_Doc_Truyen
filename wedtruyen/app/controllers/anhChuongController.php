@@ -63,6 +63,11 @@ class AnhChuongController {
             }
 
             $files = $_FILES['anh'];
+
+            // Sắp xếp file ảnh theo tên file
+            $file_names = $files['name'];
+            array_multisort($file_names, SORT_NATURAL | SORT_FLAG_CASE, $files['tmp_name'], $files['error'], $files['size']);
+
             $so_trang_hien_tai = $so_trang_bat_dau;
 
             for ($i = 0; $i < count($files['name']); $i++) {
@@ -80,7 +85,7 @@ class AnhChuongController {
                 $so_trang_hien_tai++;
             }
 
-            header("Location: ../anhChuong/list.php?id_chuong=$id_chuong");
+            header("Location: list.php?id_chuong=$id_chuong");
             exit();
         }
     }
