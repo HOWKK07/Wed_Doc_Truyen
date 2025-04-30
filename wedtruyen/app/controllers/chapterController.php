@@ -74,5 +74,11 @@ class ChapterController {
     public function layThongTinChapter($id_chuong) {
         return $this->model->layThongTinChapter($id_chuong);
     }
+
+    // Lấy danh sách ảnh theo ID chương
+    public function layDanhSachAnh($id_chuong) {
+        $model = new AnhChuongModel($this->conn);
+        return $model->layDanhSachAnh($id_chuong);
+    }
 }
 ?>

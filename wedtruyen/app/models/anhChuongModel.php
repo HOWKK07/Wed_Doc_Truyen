@@ -32,5 +32,46 @@ class AnhChuongModel {
         $result = $stmt->get_result();
         return $result->fetch_assoc();
     }
+
+    public function suaAnh($id_anh, $duong_dan_anh = null, $so_trang) {
+        if ($duong_dan_anh) {
+            $sql = "UPDATE anh_chuong SET duong_dan_anh = ?, so_trang = ? WHERE id_anh = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("sii", $duong_dan_anh, $so_trang, $id_anh);
+        } else {
+            $sql = "UPDATE anh_chuong SET so_trang = ? WHERE id_anh = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ii", $so_trang, $id_anh);
+        }
+
+        return $stmt->execute();
+    }
+
+    public function xoaAnh($id_anh) {
+        $sql = "DELETE FROM anh_chuong WHERE id_anh = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id_anh);
+
+        return $stmt->execute();
+    }
+
+    public function layThongTinAnh($id_anh) {
+        $sql = "SELECT * FROM anh_chuong WHERE id_anh = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id_anh);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    // Lấy số trang lớn nhất của chương
+    public function laySoTrangLonNhat($id_chuong) {
+        $sql = "SELECT MAX(so_trang) AS so_trang_lon_nhat FROM anh_chuong WHERE id_chuong = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result['so_trang_lon_nhat'] ?? 0; // Trả về 0 nếu không có trang nào
+    }
 }
 ?>

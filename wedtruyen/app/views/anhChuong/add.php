@@ -2,15 +2,20 @@
 session_start();
 require_once '../../config/connect.php';
 require_once '../../controllers/anhChuongController.php';
+require_once '../../models/anhChuongModel.php';
 
 if (!isset($_GET['id_chuong']) || empty($_GET['id_chuong'])) {
     die("Lỗi: Không tìm thấy ID chương.");
 }
 
 $id_chuong = $_GET['id_chuong'];
-$controller = new AnhChuongController($conn);
+$model = new AnhChuongModel($conn);
 
-$so_trang_bat_dau = isset($_GET['so_trang_bat_dau']) ? (int)$_GET['so_trang_bat_dau'] : 1;
+// Lấy số trang lớn nhất
+$so_trang_lon_nhat = $model->laySoTrangLonNhat($id_chuong);
+$so_trang_bat_dau = $so_trang_lon_nhat + 1;
+
+$controller = new AnhChuongController($conn);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -26,12 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Ảnh</title>
+    <title>Thêm Ảnh Chương</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f4f4f4;
         }
 
         .content {
@@ -44,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #f9f9f9;
+            background-color: #fff;
         }
 
         form h1 {
@@ -89,15 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Nội dung chính -->
     <div class="content">
         <form action="" method="POST" enctype="multipart/form-data">
-            <h1>Thêm Ảnh</h1>
-            <input type="hidden" name="id_chuong" value="<?php echo htmlspecialchars($id_chuong); ?>">
-
-            <label for="so_trang">Số trang bắt đầu:</label>
-            <input type="number" id="so_trang" name="so_trang" value="<?php echo $so_trang_bat_dau; ?>" required>
-
+            <h1>Thêm Ảnh Chương</h1>
+            <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
+            <label for="so_trang_bat_dau">Số trang bắt đầu:</label>
+            <input type="number" id="so_trang_bat_dau" name="so_trang_bat_dau" value="<?php echo $so_trang_bat_dau; ?>" readonly>
             <label for="anh">Chọn ảnh (có thể chọn nhiều ảnh):</label>
             <input type="file" id="anh" name="anh[]" accept="image/*" multiple required>
-
             <button type="submit">Thêm Ảnh</button>
         </form>
     </div>

@@ -1,26 +1,30 @@
 <?php
 session_start();
-require_once '../../config/connect.php'; // Kết nối cơ sở dữ liệu
+require_once '../../config/connect.php';
+require_once '../../helpers/utils.php';
 require_once '../../controllers/truyenController.php';
 
-// Lấy danh sách loại truyện
-$sqlLoaiTruyen = "SELECT * FROM loai_truyen";
-$resultLoaiTruyen = $conn->query($sqlLoaiTruyen);
-
-// Lấy danh sách thể loại
-$sqlTheLoai = "SELECT * FROM theloai";
-$resultTheLoai = $conn->query($sqlTheLoai);
-
 $controller = new TruyenController($conn);
+
+// Lấy danh sách loại truyện và thể loại
+$loaiTruyen = $controller->layDanhSachLoaiTruyen();
+$theLoai = $controller->layDanhSachTheLoai();
+
+$error_message = ''; // Biến lưu lỗi để hiển thị trên giao diện
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Xử lý thêm truyện
         $controller->themTruyen();
+        echo "<p style='color: green; text-align: center;'>Thêm truyện thành công!</p>";
     } catch (Exception $e) {
-        echo "<p style='color: red;'>Lỗi: " . htmlspecialchars($e->getMessage()) . "</p>";
+        // Lưu lỗi vào biến để hiển thị
+        $error_message = $e->getMessage();
     }
 }
 ?>
-
+<!-- Thêm header -->
+<?php include '../shares/header.php'; ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -29,54 +33,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Thêm Truyện</title>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         .content {
-            flex: 1;
             padding: 20px;
         }
 
-        .form-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
+        form {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
         }
 
-        .form-container h1 {
+        form h1 {
             text-align: center;
             margin-bottom: 20px;
-            color: #333;
         }
 
-        .form-container label {
+        form label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #555;
         }
 
-        .form-container input,
-        .form-container select,
-        .form-container textarea {
+        form input, form select, form textarea {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 14px;
         }
 
-        .form-container button {
+        form button {
             width: 100%;
             padding: 10px;
             background-color: #007bff;
@@ -87,8 +82,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
         }
 
-        .form-container button:hover {
+        form button:hover {
             background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            color: green;
+            text-align: center;
+            margin-bottom: 15px;
         }
 
         #the_loai_container {
@@ -104,23 +111,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         #the_loai_list {
-            max-height: 200px;
-            overflow-y: auto;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
-            background-color: #f9f9f9;
+            max-height: 150px;
+            overflow-y: auto;
         }
 
         .the_loai_item {
             padding: 5px;
             cursor: pointer;
-            border-bottom: 1px solid #ddd;
         }
 
         .the_loai_item:hover {
-            background-color: #007bff;
-            color: white;
+            background-color: #f0f0f0;
         }
 
         #selected_the_loai {
@@ -128,95 +132,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         #selected_the_loai_list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
         }
 
         .the_loai_selected {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 5px 10px;
+            padding: 5px;
             border: 1px solid #ccc;
-            border-radius: 20px;
-            background-color: #f9f9f9;
-            font-size: 14px;
-            color: #333;
+            border-radius: 5px;
+            margin-bottom: 5px;
         }
 
         .remove_the_loai {
-            margin-left: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #dc3545;
             cursor: pointer;
-        }
-
-        .remove_the_loai:hover {
-            color: #c82333;
+            color: red;
+            font-weight: bold;
         }
     </style>
-</head>
-<body>
-    <!-- Header -->
-    <?php include '../shares/header.php'; ?>
-
-    <!-- Nội dung chính -->
-    <div class="content">
-        <div class="form-container">
-            <h1>Thêm Truyện</h1>
-            <form action="" method="POST" enctype="multipart/form-data">
-                <label for="ten_truyen">Tên truyện</label>
-                <input type="text" id="ten_truyen" name="ten_truyen" placeholder="Nhập tên truyện" required>
-
-                <label for="tac_gia">Tác giả</label>
-                <input type="text" id="tac_gia" name="tac_gia" placeholder="Nhập tên tác giả" required>
-
-                <label for="the_loai">Thể loại</label>
-                <div id="the_loai_container">
-                    <input type="text" id="the_loai_search" placeholder="Tìm thể loại..." oninput="filterTheLoai()">
-                    <div id="the_loai_list" style="display: none;">
-                        <?php while ($row = $resultTheLoai->fetch_assoc()): ?>
-                            <div class="the_loai_item" data-id="<?php echo $row['id_theloai']; ?>" data-name="<?php echo $row['ten_theloai']; ?>" onclick="addTheLoai(this)">
-                                <?php echo $row['ten_theloai']; ?>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-                    <div id="selected_the_loai">
-                        <h4>Thể loại đã chọn:</h4>
-                        <div id="selected_the_loai_list"></div>
-                    </div>
-                </div>
-
-                <label for="loai_truyen">Loại truyện</label>
-                <select id="loai_truyen" name="loai_truyen" required>
-                    <?php while ($row = $resultLoaiTruyen->fetch_assoc()): ?>
-                        <option value="<?php echo htmlspecialchars($row['id_loai_truyen']); ?>">
-                            <?php echo htmlspecialchars($row['ten_loai_truyen']); ?>
-                        </option>
-                    <?php endwhile; ?>
-                </select>
-
-                <label for="trang_thai">Trạng thái</label>
-                <select id="trang_thai" name="trang_thai" required>
-                    <option value="Đang ra">Đang ra</option>
-                    <option value="Hoàn thành">Hoàn thành</option>
-                </select>
-
-                <label for="anh_bia">Ảnh bìa</label>
-                <input type="file" id="anh_bia" name="anh_bia" accept="image/*" required>
-
-                <label for="mo_ta">Mô tả</label>
-                <textarea id="mo_ta" name="mo_ta" rows="5" placeholder="Nhập mô tả truyện" required></textarea>
-
-                <button type="submit">Thêm Truyện</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
-
     <script>
         // Lọc thể loại theo từ khóa
         function filterTheLoai() {
@@ -287,6 +225,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             selectedItem.remove();
         }
     </script>
+</head>
+<body>
+    <div class="content">
+        <form action="" method="POST" enctype="multipart/form-data">
+            <h1>Thêm Truyện</h1>
+
+            <!-- Hiển thị lỗi nếu có -->
+            <?php if (!empty($error_message)): ?>
+                <p class="error-message"><?php echo htmlspecialchars($error_message); ?></p>
+            <?php endif; ?>
+
+            <label for="ten_truyen">Tên truyện</label>
+            <input type="text" id="ten_truyen" name="ten_truyen" required>
+
+            <label for="tac_gia">Tác giả</label>
+            <input type="text" id="tac_gia" name="tac_gia" required>
+
+            <label for="id_loai_truyen">Loại truyện</label>
+            <select id="id_loai_truyen" name="id_loai_truyen" required>
+                <?php foreach ($loaiTruyen as $loai): ?>
+                    <option value="<?php echo $loai['id_loai_truyen']; ?>">
+                        <?php echo htmlspecialchars($loai['ten_loai_truyen']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <!-- Thể loại -->
+            <label for="the_loai">Thể loại</label>
+            <div id="the_loai_container">
+                <!-- Ô tìm kiếm -->
+                <input type="text" id="the_loai_search" placeholder="Tìm thể loại..." oninput="filterTheLoai()">
+
+                <!-- Danh sách thể loại -->
+                <div id="the_loai_list" style="display: none;">
+                    <?php foreach ($theLoai as $the): ?>
+                        <div class="the_loai_item" data-id="<?php echo $the['id_theloai']; ?>" data-name="<?php echo $the['ten_theloai']; ?>" onclick="addTheLoai(this)">
+                            <?php echo $the['ten_theloai']; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Danh sách thể loại đã chọn -->
+                <div id="selected_the_loai">
+                    <h4>Thể loại đã chọn:</h4>
+                    <div id="selected_the_loai_list"></div>
+                </div>
+            </div>
+
+            <label for="trang_thai">Trạng thái</label>
+            <select id="trang_thai" name="trang_thai" required>
+                <option value="Đang ra">Đang ra</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+            </select>
+
+            <label for="anh_bia">Ảnh bìa</label>
+            <input type="file" id="anh_bia" name="anh_bia" accept="image/*" required>
+
+            <label for="mo_ta">Mô tả</label>
+            <textarea id="mo_ta" name="mo_ta" rows="5" required></textarea>
+
+            <button type="submit">Thêm Truyện</button>
+        </form>
+    </div>
+    <!-- Thêm footer -->
+<?php include '../shares/footer.php'; ?>
 </body>
 </html>
 

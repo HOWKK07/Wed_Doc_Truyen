@@ -42,22 +42,12 @@ require_once 'app/config/connect.php';
             width: 100%;
             height: 250px;
             object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .truyen-item img:hover {
-            transform: scale(1.05);
         }
 
         .truyen-item h3 {
             font-size: 16px;
             margin: 10px 0;
             color: #333;
-        }
-
-        .truyen-item a {
-            text-decoration: none;
-            color: inherit;
         }
     </style>
 </head>
@@ -67,6 +57,10 @@ require_once 'app/config/connect.php';
 
     <!-- Nội dung chính -->
     <div class="content">
+        <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
+            <p style="color: green; text-align: center;">Thêm truyện thành công!</p>
+        <?php endif; ?>
+
         <h1 style="text-align: center;">Danh Sách Truyện</h1>
         <div class="truyen-list">
             <?php
@@ -77,10 +71,10 @@ require_once 'app/config/connect.php';
             if ($result && $result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     echo "<div class='truyen-item'>";
-                    echo "<a href='app/views/truyen/chiTietTruyen.php?id_truyen=" . $row['id_truyen'] . "'>";
-                    echo "<img src='/Wed_Doc_Truyen/uploads/anhbia/" . htmlspecialchars($row['anh_bia']) . "' alt='" . htmlspecialchars($row['ten_truyen']) . "'>";
-                    echo "<h3>" . htmlspecialchars($row['ten_truyen']) . "</h3>";
+                    echo "<a href='/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=" . $row['id_truyen'] . "'>";
+                    echo "<img src='/Wed_Doc_Truyen/" . htmlspecialchars($row['anh_bia']) . "' alt='Ảnh bìa'>";
                     echo "</a>";
+                    echo "<h3>" . htmlspecialchars($row['ten_truyen']) . "</h3>";
                     echo "</div>";
                 }
             } else {
@@ -94,7 +88,3 @@ require_once 'app/config/connect.php';
     <?php include 'app/views/shares/footer.php'; ?>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
