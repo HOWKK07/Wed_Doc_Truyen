@@ -118,6 +118,7 @@ if ($result && $result->num_rows > 0) {
                     <th>Ngày Tạo</th>
                     <th>Trạng Thái</th>
                     <th>Loại Truyện</th>
+                    <th>Năm Phát Hành</th>
                     <th>Hành Động</th>
                 </tr>
             </thead>
@@ -130,6 +131,7 @@ if ($result && $result->num_rows > 0) {
                             <td><?php echo date('d/m/Y', strtotime($truyen['ngay_tao'])); ?></td>
                             <td><?php echo htmlspecialchars($truyen['trang_thai']); ?></td>
                             <td><?php echo htmlspecialchars($truyen['ten_loai_truyen']); ?></td>
+                            <td><?php echo htmlspecialchars($truyen['nam_phat_hanh']); ?></td>
                             <td class="actions">
                                 <a href="edit.php?id=<?php echo $truyen['id_truyen']; ?>" class="edit-btn">Sửa</a>
                                 <a href="delete.php?id_truyen=<?php echo $truyen['id_truyen']; ?>" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa truyện này?');">Xóa</a>
@@ -138,7 +140,7 @@ if ($result && $result->num_rows > 0) {
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="6">Không có truyện nào.</td>
+                        <td colspan="7">Không có truyện nào.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

@@ -88,41 +88,19 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             cursor: grab;
         }
 
-        .page-item.dragging {
-            opacity: 0.5;
-            background-color: #f0f0f0;
-        }
-
         .page-item img {
-            width: 150px; /* Giới hạn chiều rộng */
-            height: auto; /* Tự động điều chỉnh chiều cao theo tỷ lệ */
+            width: 150px;
+            height: auto;
             border-radius: 5px;
-            margin-bottom: 10px;
-            object-fit: cover; /* Đảm bảo ảnh không bị méo */
-        }
-
-        .page-item p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
         }
 
         .actions a {
             text-decoration: none;
             padding: 5px 10px;
             border-radius: 5px;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
         }
 
         .actions .edit-btn {
@@ -130,53 +108,49 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
             color: black;
         }
 
-        .actions .edit-btn:hover {
-            background-color: #e0a800;
-        }
-
         .actions .delete-btn {
             background-color: #dc3545;
             color: white;
         }
 
-        .actions .delete-btn:hover {
-            background-color: #c82333;
+        .actions a:hover {
+            opacity: 0.8;
         }
 
-        .add-page-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #28a745;
+        .add-page-btn, #save-order {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
             border-radius: 5px;
-            padding: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        .add-page-item:hover {
-            background-color: #f9f9f9;
-            border-color: #218838;
+        .add-page-btn:hover {
+            background-color: #218838;
         }
 
-        .add-page-item a {
+        #save-order {
+            background-color: #007bff;
+        }
+
+        #save-order:hover {
+            background-color: #0056b3;
+        }
+
+        .back-to-detail-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
             text-decoration: none;
-            color: #28a745;
-            font-weight: bold;
+            border-radius: 5px;
         }
 
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            text-align: center;
-            text-decoration: none;
-            color: #007bff;
-            font-size: 16px;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
+        .back-to-detail-btn:hover {
+            background-color: #5a6268;
         }
     </style>
 </head>
@@ -192,10 +166,18 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
             <h3>Chương: <?php echo htmlspecialchars($ten_chuong); ?></h3>
         </div>
 
+        <!-- Nút trở về chi tiết truyện -->
+        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $id_truyen; ?>" class="back-to-detail-btn">← Trở về chi tiết truyện</a>
+
+        <!-- Nút thêm trang và lưu thứ tự -->
+        <a href="add.php?id_chuong=<?php echo $id_chuong; ?>&so_trang_bat_dau=<?php echo $so_trang_lon_nhat + 1; ?>" class="add-page-btn">+ Thêm Trang</a>
+        <button id="save-order">Lưu Thứ Tự</button>
+
+        <!-- Hiển thị danh sách trang -->
         <h1>Danh Sách Trang</h1>
         <div class="page-list" id="page-list">
             <?php foreach ($anh_list as $anh): ?>
-                <div class="page-item" draggable="true" data-id="<?php echo $anh['id_anh']; ?>">
+                <div class="page-item" draggable="true" data-id="<?php echo $anh['id_anh']; ?>" data-so-trang="<?php echo $anh['so_trang']; ?>">
                     <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
                     <p>Trang: <?php echo $anh['so_trang']; ?></p>
                     <div class="actions">
@@ -205,22 +187,13 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
                 </div>
             <?php endforeach; ?>
         </div>
-        <div class="add-page-item">
-            <a href="add.php?id_chuong=<?php echo $id_chuong; ?>&so_trang_bat_dau=<?php echo $so_trang_lon_nhat + 1; ?>">
-                + Thêm Trang
-            </a>
-        </div>
-        <button id="save-order" style="margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Lưu Thứ Tự
-        </button>
-        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $id_truyen; ?>" class="back-link">Quay lại chi tiết truyện</a>
     </div>
 
     <script>
         const pageList = document.getElementById('page-list');
         let draggingItem;
+        let autoScrollInterval;
 
-        // Kéo thả các phần tử
         pageList.addEventListener('dragstart', (e) => {
             draggingItem = e.target;
             draggingItem.classList.add('dragging');
@@ -229,16 +202,23 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
         pageList.addEventListener('dragend', (e) => {
             draggingItem.classList.remove('dragging');
             draggingItem = null;
+
+            // Dừng auto-scroll khi kết thúc kéo
+            clearInterval(autoScrollInterval);
         });
 
         pageList.addEventListener('dragover', (e) => {
             e.preventDefault();
+
             const afterElement = getDragAfterElement(pageList, e.clientY);
             if (afterElement == null) {
                 pageList.appendChild(draggingItem);
             } else {
                 pageList.insertBefore(draggingItem, afterElement);
             }
+
+            // Auto-scroll khi kéo gần mép trên hoặc mép dưới
+            handleAutoScroll(e.clientY);
         });
 
         function getDragAfterElement(container, y) {
@@ -255,15 +235,53 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
+        function handleAutoScroll(mouseY) {
+            const scrollMargin = 50; // Khoảng cách từ mép trên/dưới để bắt đầu cuộn
+            const scrollSpeed = 10; // Tốc độ cuộn (px mỗi lần)
+
+            // Dừng auto-scroll trước khi thiết lập mới
+            clearInterval(autoScrollInterval);
+
+            if (mouseY < scrollMargin) {
+                // Cuộn lên
+                autoScrollInterval = setInterval(() => {
+                    window.scrollBy(0, -scrollSpeed);
+                }, 20);
+            } else if (mouseY > window.innerHeight - scrollMargin) {
+                // Cuộn xuống
+                autoScrollInterval = setInterval(() => {
+                    window.scrollBy(0, scrollSpeed);
+                }, 20);
+            }
+        }
+    </script>
+
+    <script>
         // Lưu thứ tự mới
         document.getElementById('save-order').addEventListener('click', () => {
             const order = [];
+            const originalOrder = []; // Lưu thứ tự ban đầu
+            const currentOrder = []; // Lưu thứ tự hiện tại
+
+            // Lấy thứ tự ban đầu và hiện tại
             document.querySelectorAll('.page-item').forEach((item, index) => {
-                order.push({
-                    id: item.getAttribute('data-id'),
-                    so_trang: index + 1
-                });
+                const id = item.getAttribute('data-id');
+                originalOrder.push({ id: id, so_trang: item.getAttribute('data-so-trang') });
+                currentOrder.push({ id: id, so_trang: index + 1 });
             });
+
+            // So sánh thứ tự ban đầu và hiện tại, chỉ thêm các trang đã thay đổi
+            currentOrder.forEach((item, index) => {
+                if (item.so_trang != originalOrder[index].so_trang) {
+                    order.push(item);
+                }
+            });
+
+            // Nếu không có thay đổi, không gửi yêu cầu
+            if (order.length === 0) {
+                alert('Không có thay đổi nào để lưu.');
+                return;
+            }
 
             // Gửi yêu cầu AJAX để lưu thứ tự
             fetch('updateOrder.php', {
@@ -273,23 +291,20 @@ while ($anh = $anh_chuongs->fetch_assoc()) {
                 },
                 body: JSON.stringify(order)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thứ tự đã được cập nhật!');
-                    location.reload();
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Thứ tự đã được cập nhật!');
+                        location.reload(); // Tải lại trang để hiển thị thứ tự mới
+                    } else {
+                        alert('Có lỗi xảy ra khi cập nhật thứ tự.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
                     alert('Có lỗi xảy ra khi cập nhật thứ tự.');
-                }
-            })
-            .catch(error => {
-                console.error('Lỗi:', error);
-                alert('Có lỗi xảy ra khi cập nhật thứ tự.');
-            });
+                });
         });
     </script>
-
-    <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
 </body>
 </html>
