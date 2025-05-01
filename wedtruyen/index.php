@@ -40,7 +40,7 @@ require_once 'app/config/connect.php';
 
         .truyen-item img {
             width: 100%;
-            height: 250px;
+            height: 270px;
             object-fit: cover;
         }
 

@@ -32,6 +32,16 @@ $stmt_min_chapter->execute();
 $result_min_chapter = $stmt_min_chapter->get_result();
 $min_chapter = $result_min_chapter->fetch_assoc();
 $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nhất hoặc null nếu không có
+
+// Lấy thông tin đánh giá
+$sql_rating = "SELECT AVG(so_sao) AS avg_rating, COUNT(*) AS total_ratings FROM ratings WHERE id_truyen = ?";
+$stmt_rating = $conn->prepare($sql_rating);
+$stmt_rating->bind_param("i", $id_truyen);
+$stmt_rating->execute();
+$result_rating = $stmt_rating->get_result();
+$rating_data = $result_rating->fetch_assoc();
+$avg_rating = round($rating_data['avg_rating'], 1);
+$total_ratings = $rating_data['total_ratings'];
 ?>
 
 <!DOCTYPE html>
@@ -73,12 +83,12 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
 
         .truyen-info h1 {
             font-size: 28px;
-            margin: 0 0 10px;
+            margin: 5px 2px 3px;
             color: #333;
         }
 
         .truyen-info p {
-            margin: 5px 0;
+            margin: 5px 2px 3px;
             color: #555;
         }
 
@@ -86,7 +96,7 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .truyen-info .genres span {
@@ -98,7 +108,7 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
         }
 
         .truyen-actions {
-            margin-top: 20px;
+            margin-top: 10px;
             display: flex;
             gap: 10px; /* Khoảng cách giữa các nút */
         }
@@ -126,7 +136,7 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
         .truyen-actions .start-reading {
             display: inline-block;
             padding: 10px 20px;
-            background-color: #28a745; /* Màu xanh lá */
+            background-color:rgb(59, 40, 167); /* Màu xanh lá */
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -224,6 +234,56 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
             font-size: 16px;
             color: #007bff;
         }
+
+
+        .rating-section p {
+            margin: 5px 2px 2px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .rating-form {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rating-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stars {
+            display: flex;
+            gap: 5px;
+        }
+
+        .star {
+            font-size: 20px;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .star:hover,
+        .star.selected {
+            color: #ffc107;
+        }
+
+        .submit-rating-btn {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .submit-rating-btn:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -248,6 +308,30 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
                 </div>
                 <p><strong>Năm xuất bản:</strong> <?php echo htmlspecialchars($truyen['nam_phat_hanh']); ?></p>
                 <p><strong>Trạng thái:</strong> <?php echo htmlspecialchars($truyen['trang_thai']); ?></p>
+                <div class="rating-section">
+                    <p><strong>Đánh giá:</strong> <?php echo $avg_rating; ?> / 5 (<?php echo $total_ratings; ?> lượt)</p>
+
+                    <?php if (isset($_SESSION['user'])): ?>
+                        <form action="rate.php" method="POST" style="display: flex; align-items: center; gap: 10px;">
+                            <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                            <input type="hidden" id="so_sao" name="so_sao" value="0">
+                            
+                            <!-- Ngôi sao để chọn số sao -->
+                            <div class="stars" style="display: flex; gap: 5px;">
+                                <span data-value="1" class="star">★</span>
+                                <span data-value="2" class="star">★</span>
+                                <span data-value="3" class="star">★</span>
+                                <span data-value="4" class="star">★</span>
+                                <span data-value="5" class="star">★</span>
+                            </div>
+
+                            <!-- Nút gửi đánh giá -->
+                            <button type="submit" class="submit-rating-btn">Gửi</button>
+                        </form>
+                    <?php else: ?>
+                        <p><a href="../taiKhoan/login.php">Đăng nhập</a> để đánh giá.</p>
+                    <?php endif; ?>
+                </div>
                 <p><strong>Mô tả:</strong> <?php echo nl2br(htmlspecialchars($truyen['mo_ta'])); ?></p>
                 <div class="truyen-actions">
                     <button class="add-to-library">Thêm vào thư viện</button>
@@ -260,6 +344,8 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
                 </div>
             </div>
         </div>
+
+    
 
         <div class="chapter-list">
             <h2>Danh sách Chương</h2>
@@ -293,5 +379,41 @@ $id_chuong_min = $min_chapter['id_chuong'] ?? null; // Lấy ID chapter nhỏ nh
 
     <!-- Footer -->
     <?php include '../shares/footer.php'; ?>
+
+    <script>
+        const stars = document.querySelectorAll('.star');
+        const soSaoInput = document.getElementById('so_sao');
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function () {
+                resetStars();
+                highlightStars(this.getAttribute('data-value'));
+            });
+
+            star.addEventListener('click', function () {
+                soSaoInput.value = this.getAttribute('data-value'); // Gán giá trị số sao vào input ẩn
+                resetStars();
+                highlightStars(this.getAttribute('data-value'), true);
+            });
+        });
+
+        function resetStars() {
+            stars.forEach(star => {
+                star.classList.remove('selected');
+            });
+        }
+
+        function highlightStars(value, select = false) {
+            stars.forEach(star => {
+                if (star.getAttribute('data-value') <= value) {
+                    if (select) {
+                        star.classList.add('selected');
+                    } else {
+                        star.classList.add('hover');
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
