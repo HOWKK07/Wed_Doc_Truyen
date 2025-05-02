@@ -33,7 +33,7 @@ class AnhChuongModel {
         return $result->fetch_assoc();
     }
 
-    public function suaAnh($id_anh, $duong_dan_anh = null, $so_trang) {
+public function suaAnh($id_anh, $so_trang, $duong_dan_anh = null) {
         if ($duong_dan_anh) {
             $sql = "UPDATE anh_chuong SET duong_dan_anh = ?, so_trang = ? WHERE id_anh = ?";
             $stmt = $this->conn->prepare($sql);
@@ -72,6 +72,14 @@ class AnhChuongModel {
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         return $result['so_trang_lon_nhat'] ?? 0; // Trả về 0 nếu không có trang nào
+    }
+
+    public function example($required, $optional = null) {
+        // ...
+    }
+
+    public function someMethod($so_trang, $duong_dan_anh = null) {
+        // ...
     }
 }
 ?>
