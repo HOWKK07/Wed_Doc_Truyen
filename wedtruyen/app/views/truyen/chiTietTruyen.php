@@ -122,7 +122,7 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1200px, initial-scale=1.0">
-    <title>Chi Tiết Truyện</title>
+    <title><?php echo htmlspecialchars($truyen['ten_truyen'] ?? 'Chi Tiết Truyện'); ?></title>
     <style>
         /* CSS của bạn đã được thêm vào đây */
         body {
@@ -182,7 +182,7 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
         .rating-section {
             margin-top: 10px;
             padding: 10px;
-            background-color: #f8f9fa;
+            background-color:rgb(248, 250, 248);
             border-radius: 5px;
         }
 
@@ -203,27 +203,8 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
             transition: color 0.3s;
         }
 
-        .star:hover,
-        .star.hover {
-            color: #ffc107;
-        }
-
         .star.selected {
-            color: #ffc107;
-        }
-
-        .submit-rating-btn {
-            padding: 5px 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .submit-rating-btn:hover {
-            background-color: #218838;
+            color: #ffc107; /* Màu vàng cho các ngôi sao được chọn */
         }
 
         .truyen-actions {
@@ -479,35 +460,24 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
         const stars = document.querySelectorAll('.star');
         const soSaoInput = document.getElementById('so_sao');
 
-        // Thêm sự kiện hover và click cho từng ngôi sao
+        // Thêm sự kiện click cho từng ngôi sao
         stars.forEach(star => {
-            // Khi di chuột qua ngôi sao
-            star.addEventListener('mouseover', function () {
-                resetStars(); // Xóa trạng thái cũ
-                highlightStars(this.getAttribute('data-value')); // Làm nổi bật các ngôi sao
-            });
-
             // Khi click vào ngôi sao
             star.addEventListener('click', function () {
-                const value = this.getAttribute('data-value');
+                const value = this.getAttribute('data-value'); // Lấy giá trị của ngôi sao được chọn
                 soSaoInput.value = value; // Gán giá trị cho input ẩn
-                resetStars();
-                highlightStars(value, true); // Làm nổi bật các ngôi sao đã chọn
+                updateStars(value); // Cập nhật trạng thái các ngôi sao
             });
         });
 
-        // Xóa trạng thái của tất cả các ngôi sao
-        function resetStars() {
+        // Cập nhật trạng thái của các ngôi sao
+        function updateStars(value) {
             stars.forEach(star => {
-                star.classList.remove('selected', 'hover');
-            });
-        }
-
-        // Làm nổi bật các ngôi sao
-        function highlightStars(value, select = false) {
-            stars.forEach(star => {
-                if (star.getAttribute('data-value') <= value) {
-                    star.classList.add(select ? 'selected' : 'hover');
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= value) {
+                    star.classList.add('selected'); // Làm nổi bật các ngôi sao được chọn
+                } else {
+                    star.classList.remove('selected'); // Bỏ làm nổi bật các ngôi sao không được chọn
                 }
             });
         }
