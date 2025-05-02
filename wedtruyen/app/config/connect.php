@@ -1,5 +1,5 @@
 <?php
-// filepath: app/config/connect.php
+// filepath: c:\xampp\htdocs\Wed_Doc_Truyen\wedtruyen\app\config\connect.php
 
 $host = "localhost";
 $username = "root";

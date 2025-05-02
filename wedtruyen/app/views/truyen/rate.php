@@ -9,7 +9,12 @@ if (!isset($_SESSION['user'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_truyen = $_POST['id_truyen'];
     $id_nguoidung = $_SESSION['user']['id_nguoidung'];
-    $so_sao = $_POST['so_sao'];
+    $so_sao = (int)$_POST['so_sao'];
+
+    // Kiểm tra giá trị so_sao
+    if ($so_sao < 1 || $so_sao > 5) {
+        die("Giá trị đánh giá không hợp lệ. Vui lòng chọn từ 1 đến 5 sao.");
+    }
 
     // Kiểm tra nếu người dùng đã đánh giá truyện này
     $sql_check = "SELECT * FROM ratings WHERE id_truyen = ? AND id_nguoidung = ?";

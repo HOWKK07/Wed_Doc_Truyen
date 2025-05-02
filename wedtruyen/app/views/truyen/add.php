@@ -4,21 +4,34 @@ require_once '../../config/connect.php';
 require_once '../../helpers/utils.php';
 require_once '../../controllers/truyenController.php';
 
+if (!class_exists('TruyenController')) {
+    die("TruyenController class not found");
+}
+
+if (!isset($conn)) {
+    die("Database connection not established");
+}
+
 $controller = new TruyenController($conn);
 
 // Lấy danh sách loại truyện và thể loại
 $loaiTruyen = $controller->layDanhSachLoaiTruyen();
+if (!is_array($loaiTruyen)) {
+    $loaiTruyen = [];
+}
+
 $theLoai = $controller->layDanhSachTheLoai();
+if (!is_array($theLoai)) {
+    $theLoai = [];
+}
 
 $error_message = ''; // Biến lưu lỗi để hiển thị trên giao diện
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Xử lý thêm truyện
         $controller->themTruyen();
         echo "<p style='color: green; text-align: center;'>Thêm truyện thành công!</p>";
     } catch (Exception $e) {
-        // Lưu lỗi vào biến để hiển thị
         $error_message = $e->getMessage();
     }
 }
@@ -156,13 +169,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
     <script>
-        // Lọc thể loại theo từ khóa
         function filterTheLoai() {
             const searchValue = document.getElementById('the_loai_search').value.toLowerCase();
             const items = document.querySelectorAll('.the_loai_item');
             const listContainer = document.getElementById('the_loai_list');
 
-            // Hiển thị danh sách nếu có từ khóa, ẩn nếu không có
             if (searchValue.trim() === '') {
                 listContainer.style.display = 'none';
                 return;
@@ -170,7 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 listContainer.style.display = 'block';
             }
 
-            // Lọc danh sách thể loại
             let hasVisibleItems = false;
             items.forEach(item => {
                 const name = item.getAttribute('data-name').toLowerCase();
@@ -182,7 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
 
-            // Ẩn danh sách nếu không có mục nào phù hợp
             if (!hasVisibleItems) {
                 listContainer.style.display = 'none';
             }
