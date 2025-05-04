@@ -1,47 +1,17 @@
 <?php
 session_start();
 require_once '../../config/connect.php';
+require_once '../../controllers/thuVienController.php';
 
-// Check if user is logged in
+// Kiểm tra người dùng đã đăng nhập
 if (!isset($_SESSION['user'])) {
     header("Location: ../taiKhoan/login.php");
     exit();
 }
 
-// Validate database connection
-if (!isset($conn) || !($conn instanceof mysqli)) {
-    die("Database connection error");
-}
-
-// Validate user session data
-if (!isset($_SESSION['user']['id_nguoidung']) || !is_numeric($_SESSION['user']['id_nguoidung'])) {
-    die("Invalid user data");
-}
-
-$id_nguoidung = (int)$_SESSION['user']['id_nguoidung'];
-
-// Get saved stories
-$sql = "SELECT truyen.id_truyen, truyen.ten_truyen, truyen.anh_bia 
-        FROM follows 
-        JOIN truyen ON follows.id_truyen = truyen.id_truyen 
-        WHERE follows.id_nguoidung = ?";
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    die("Database query preparation failed");
-}
-
-$stmt->bind_param("i", $id_nguoidung);
-
-if (!$stmt->execute()) {
-    die("Database query execution failed");
-}
-
-$result = $stmt->get_result();
-
-if (!$result) {
-    die("Failed to get query result");
-}
+$id_nguoidung = $_SESSION['user']['id_nguoidung'];
+$thuVienController = new ThuVienController($conn);
+$truyenList = $thuVienController->layThuVien($id_nguoidung);
 ?>
 
 <!DOCTYPE html>
@@ -132,25 +102,14 @@ if (!$result) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Xóa truyện khỏi giao diện Thư viện
-                        const item = document.querySelector(`.truyen-item[data-id="${idTruyen}"]`);
-                        if (item) item.remove();
-
-                        // Cập nhật trạng thái nút trong trang Chi tiết truyện (nếu có)
-                        const detailButton = window.opener?.document.getElementById('follow-button');
-                        if (detailButton) {
-                            detailButton.setAttribute('data-followed', 'false');
-                            detailButton.textContent = 'Thêm vào thư viện';
-                        }
-
-                        alert('Truyện đã được xóa khỏi thư viện!');
+                        alert('Xóa thành công!');
+                        location.reload();
                     } else {
-                        alert(data.message || 'Có lỗi xảy ra.');
+                        alert('Có lỗi xảy ra: ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Lỗi:', error);
-                    alert('Có lỗi xảy ra.');
                 });
             }
         }
@@ -164,20 +123,15 @@ if (!$result) {
     <div class="container">
         <h1>Thư viện của tôi</h1>
         <div class="truyen-list">
-            <?php if ($result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <?php 
-                    $id_truyen = htmlspecialchars((string)$row['id_truyen']);
-                    $ten_truyen = htmlspecialchars($row['ten_truyen']);
-                    $anh_bia = htmlspecialchars($row['anh_bia']);
-                    ?>
-                    <div class="truyen-item" data-id="<?php echo $id_truyen; ?>">
+            <?php if ($truyenList->num_rows > 0): ?>
+                <?php while ($row = $truyenList->fetch_assoc()): ?>
+                    <div class="truyen-item" data-id="<?php echo htmlspecialchars($row['id_truyen']); ?>">
                         <!-- Nút X để xóa -->
-                        <button class="delete-btn" onclick="removeFromLibrary(<?php echo $id_truyen; ?>)">×</button>
-                        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $id_truyen; ?>">
-                            <img src="/Wed_Doc_Truyen/<?php echo $anh_bia; ?>" alt="<?php echo $ten_truyen; ?>">
+                        <button class="delete-btn" onclick="removeFromLibrary(<?php echo htmlspecialchars($row['id_truyen']); ?>)">×</button>
+                        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo htmlspecialchars($row['id_truyen']); ?>">
+                            <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($row['anh_bia']); ?>" alt="<?php echo htmlspecialchars($row['ten_truyen']); ?>">
                         </a>
-                        <h3><?php echo $ten_truyen; ?></h3>
+                        <h3><?php echo htmlspecialchars($row['ten_truyen']); ?></h3>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>
@@ -191,7 +145,6 @@ if (!$result) {
 
     <?php
     // Close database resources
-    $stmt->close();
     $conn->close();
     ?>
 </body>

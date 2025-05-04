@@ -4,8 +4,10 @@ require_once '../../models/chapterModel.php';
 
 class ChapterController {
     private $model;
+    private $conn; // Khai báo thuộc tính $conn
 
     public function __construct($conn) {
+        $this->conn = $conn; // Gán kết nối cơ sở dữ liệu vào $conn
         $this->model = new ChapterModel($conn);
     }
 
@@ -72,13 +74,43 @@ class ChapterController {
 
     // Lấy thông tin chi tiết của một chapter
     public function layThongTinChapter($id_chuong) {
-        return $this->model->layThongTinChapter($id_chuong);
+        $sql = "SELECT c.*, t.ten_truyen 
+                FROM chuong c 
+                JOIN truyen t ON c.id_truyen = t.id_truyen 
+                WHERE c.id_chuong = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
     // Lấy danh sách ảnh theo ID chương
     public function layDanhSachAnh($id_chuong) {
         $model = new AnhChuongModel($this->conn);
         return $model->layDanhSachAnh($id_chuong);
+    }
+
+    // Lấy chương trước
+    public function layChuongTruoc($id_chuong) {
+        $sql = "SELECT id_chuong FROM chuong WHERE id_truyen = (SELECT id_truyen FROM chuong WHERE id_chuong = ?) AND so_chuong < (SELECT so_chuong FROM chuong WHERE id_chuong = ?) ORDER BY so_chuong DESC LIMIT 1";
+        $stmt = $this->conn->prepare($sql); // Sử dụng $this->conn
+        $stmt->bind_param("ii", $id_chuong, $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['id_chuong'] ?? null;
+    }
+
+    // Lấy chương sau
+    public function layChuongSau($id_chuong) {
+        $sql = "SELECT id_chuong FROM chuong WHERE id_truyen = (SELECT id_truyen FROM chuong WHERE id_chuong = ?) AND so_chuong > (SELECT so_chuong FROM chuong WHERE id_chuong = ?) ORDER BY so_chuong ASC LIMIT 1";
+        $stmt = $this->conn->prepare($sql); // Sử dụng $this->conn
+        $stmt->bind_param("ii", $id_chuong, $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['id_chuong'] ?? null;
     }
 }
 ?>
