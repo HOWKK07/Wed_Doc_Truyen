@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../../config/connect.php';
+require_once '../../controllers/danhGiaController.php';
+require_once '../../controllers/binhLuanController.php';
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
     die("Database connection error");
@@ -80,26 +82,11 @@ if (!$result_min_chapter) {
 $min_chapter = $result_min_chapter->fetch_assoc();
 $id_chuong_min = isset($min_chapter['id_chuong']) ? (int)$min_chapter['id_chuong'] : null;
 
-// Get rating information
-$sql_rating = "SELECT AVG(so_sao) AS avg_rating, COUNT(*) AS total_ratings FROM ratings WHERE id_truyen = ?";
-$stmt_rating = $conn->prepare($sql_rating);
-if (!$stmt_rating) {
-    die("Database query preparation failed");
-}
-
-$stmt_rating->bind_param("i", $id_truyen);
-if (!$stmt_rating->execute()) {
-    die("Database query execution failed");
-}
-
-$result_rating = $stmt_rating->get_result();
-if (!$result_rating) {
-    die("Failed to get query result");
-}
-
-$rating_data = $result_rating->fetch_assoc();
-$avg_rating = isset($rating_data['avg_rating']) ? round((float)$rating_data['avg_rating'], 1) : 0.0;
-$total_ratings = isset($rating_data['total_ratings']) ? (int)$rating_data['total_ratings'] : 0;
+// Sử dụng danhGiaController để lấy thông tin đánh giá
+$danhGiaController = new danhGiaController($conn);
+$ratingData = $danhGiaController->getRating($id_truyen);
+$avg_rating = isset($ratingData['avg_rating']) ? round((float)$ratingData['avg_rating'], 1) : 0.0;
+$total_ratings = isset($ratingData['total_ratings']) ? (int)$ratingData['total_ratings'] : 0;
 
 // Check if story is in user's library
 $is_followed = false;
@@ -115,6 +102,10 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
         }
     }
 }
+
+// Sử dụng binhLuanController để lấy thông tin bình luận
+$binhLuanController = new BinhLuanController($conn);
+$binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
 ?>
 
 <!DOCTYPE html>
@@ -133,12 +124,123 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1500px;
             margin: 20px auto;
             padding: 20px;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Bố cục chính */
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Cột nội dung chính */
+        .main-content {
+            flex: 4; /* Tăng kích thước cột nội dung chính */
+        }
+
+        /* Cột bình luận */
+        .comments-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .comments-section h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        .comment-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .comment-date {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .comment-content {
+            margin: 0;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .no-comments {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        .comment-form textarea {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+        }
+
+        .comment-form button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .comment-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .login-prompt {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .login-prompt a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-prompt a:hover {
+            text-decoration: underline;
         }
 
         .truyen-header {
@@ -280,35 +382,39 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
             margin-top: 5px;
         }
 
-        .chapter-actions a {
-            margin-left: 10px;
+        .chapter-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chapter-actions .btn {
             padding: 5px 10px;
+            font-size: 14px;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 12px;
+            color: white;
+            text-align: center;
         }
 
-        .chapter-actions .add-image-btn {
+        .chapter-actions .btn-success {
             background-color: #28a745;
-            color: white;
         }
 
-        .chapter-actions .list-image-btn {
-            background-color: #17a2b8;
-            color: white;
+        .chapter-actions .btn-primary {
+            background-color: #007bff;
         }
 
-        .chapter-actions .edit-btn {
+        .chapter-actions .btn-warning {
             background-color: #ffc107;
             color: black;
         }
 
-        .chapter-actions .delete-btn {
+        .chapter-actions .btn-danger {
             background-color: #dc3545;
-            color: white;
         }
 
-        .chapter-actions a:hover {
+        .chapter-actions .btn:hover {
             opacity: 0.8;
         }
     </style>
@@ -319,107 +425,121 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
 
     <!-- Main content -->
     <div class="container">
-        <div class="truyen-header">
-            <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($truyen['anh_bia'] ?? ''); ?>" alt="Ảnh bìa">
-            <div class="truyen-info">
-                <h1><?php echo htmlspecialchars((string)$truyen['ten_truyen']); ?></h1>
-                <p><strong>Tác giả:</strong> <?php echo htmlspecialchars((string)$truyen['tac_gia']); ?></p>
-                <p><strong>Thể loại:</strong></p>
-                <div class="genres">
-                    <?php
-                    $the_loai = isset($truyen['the_loai']) ? explode(', ', (string)$truyen['the_loai']) : [];
-                    foreach ($the_loai as $genre) {
-                        echo "<span>" . htmlspecialchars($genre) . "</span>";
-                    }
-                    ?>
-                </div>
-                <p><strong>Năm xuất bản:</strong> <?php echo htmlspecialchars($truyen['nam_phat_hanh'] ?? ''); ?></p>
-                <p><strong>Trạng thái:</strong> <?php echo htmlspecialchars($truyen['trang_thai'] ?? ''); ?></p>
-                
-                <!-- Rating Section -->
-                <div class="rating-section">
-                    <p><strong>Đánh giá:</strong> <?php echo $avg_rating; ?> / 5 (<?php echo $total_ratings; ?> lượt)</p>
-                    
-                    <?php if (isset($_SESSION['user'])): ?>
-                        <form action="rate.php" method="POST" style="display: flex; align-items: center; gap: 10px;">
-                            <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
-                            <input type="hidden" id="so_sao" name="so_sao" value="0">
+        <div class="content-wrapper">
+            <!-- Cột nội dung chính -->
+            <div class="main-content">
+                <div class="truyen-header">
+                    <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($truyen['anh_bia'] ?? ''); ?>" alt="Ảnh bìa">
+                    <div class="truyen-info">
+                        <h1><?php echo htmlspecialchars((string)$truyen['ten_truyen']); ?></h1>
+                        <p><strong>Tác giả:</strong> <?php echo htmlspecialchars((string)$truyen['tac_gia']); ?></p>
+                        <p><strong>Thể loại:</strong></p>
+                        <div class="genres">
+                            <?php
+                            $the_loai = isset($truyen['the_loai']) ? explode(', ', (string)$truyen['the_loai']) : [];
+                            foreach ($the_loai as $genre) {
+                                echo "<span>" . htmlspecialchars($genre) . "</span>";
+                            }
+                            ?>
+                        </div>
+                        <p><strong>Năm xuất bản:</strong> <?php echo htmlspecialchars($truyen['nam_phat_hanh'] ?? ''); ?></p>
+                        <p><strong>Trạng thái:</strong> <?php echo htmlspecialchars($truyen['trang_thai'] ?? ''); ?></p>
+                        
+                        <!-- Rating Section -->
+                        <div class="rating-section">
+                            <p><strong>Đánh giá:</strong> <?php echo $avg_rating; ?> / 5 (<?php echo $total_ratings; ?> lượt)</p>
                             
-                            <div class="stars">
-                                <span data-value="1" class="star">★</span>
-                                <span data-value="2" class="star">★</span>
-                                <span data-value="3" class="star">★</span>
-                                <span data-value="4" class="star">★</span>
-                                <span data-value="5" class="star">★</span>
-                            </div>
+                            <?php if (isset($_SESSION['user'])): ?>
+                                <form action="rate.php" method="POST" style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                                    <input type="hidden" id="so_sao" name="so_sao" value="0">
+                                    
+                                    <div class="stars">
+                                        <span data-value="1" class="star">★</span>
+                                        <span data-value="2" class="star">★</span>
+                                        <span data-value="3" class="star">★</span>
+                                        <span data-value="4" class="star">★</span>
+                                        <span data-value="5" class="star">★</span>
+                                    </div>
 
-                            <button type="submit" class="submit-rating-btn">Gửi đánh giá</button>
-                        </form>
-                    <?php else: ?>
-                        <p><a href="../taiKhoan/login.php">Đăng nhập</a> để đánh giá truyện</p>
-                    <?php endif; ?>
+                                    <button type="submit" class="submit-rating-btn">Gửi đánh giá</button>
+                                </form>
+                            <?php else: ?>
+                                <p><a href="../taiKhoan/login.php">Đăng nhập</a> để đánh giá truyện</p>
+                            <?php endif; ?>
+                        </div>
+
+                        <p><strong>Mô tả:</strong> <?php echo nl2br(htmlspecialchars($truyen['mo_ta'] ?? '')); ?></p>
+                        
+                        <div class="truyen-actions">
+                            <?php if ($id_chuong_min): ?>
+                                <a href="../chapter/docChapter.php?id_chuong=<?php echo $id_chuong_min; ?>" class="start-reading">Bắt đầu đọc</a>
+                            <?php else: ?>
+                                <button class="start-reading" disabled>Không có chương để đọc</button>
+                            <?php endif; ?>
+
+                            <a href="../chapter/add.php?id_truyen=<?php echo $id_truyen; ?>" class="add-chapter-btn">Thêm Chapter</a>
+
+                            <button id="follow-button" class="add-to-library" data-followed="<?php echo $is_followed ? 'true' : 'false'; ?>">
+                                <?php echo $is_followed ? 'Xóa khỏi thư viện' : 'Thêm vào thư viện'; ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <p><strong>Mô tả:</strong> <?php echo nl2br(htmlspecialchars($truyen['mo_ta'] ?? '')); ?></p>
-                
-                <div class="truyen-actions">
-                    <?php if ($id_chuong_min): ?>
-                        <a href="../chapter/docChapter.php?id_chuong=<?php echo $id_chuong_min; ?>" class="start-reading">Bắt đầu đọc</a>
-                    <?php else: ?>
-                        <button class="start-reading" disabled>Không có chương để đọc</button>
-                    <?php endif; ?>
-
-                    <a href="../chapter/add.php?id_truyen=<?php echo $id_truyen; ?>" class="add-chapter-btn">Thêm Chapter</a>
-
-                    <button id="follow-button" class="add-to-library" data-followed="<?php echo $is_followed ? 'true' : 'false'; ?>">
-                        <?php echo $is_followed ? 'Xóa khỏi thư viện' : 'Thêm vào thư viện'; ?>
-                    </button>
+                <div class="chapter-list">
+                    <h2>Danh sách Chương</h2>
+                    <?php while ($chuong = $chuongs->fetch_assoc()): ?>
+                        <div class="chapter-item">
+                            <div class="chapter-info">
+                                <a href="../chapter/docChapter.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="chapter-title">
+                                    Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>: <?php echo htmlspecialchars($chuong['tieu_de']); ?>
+                                </a>
+                                <span class="chapter-meta">Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'] ?? 'now')); ?></span>
+                            </div>
+                            <!-- Các nút chức năng -->
+                            <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
+                                <div class="chapter-actions">
+                                    <a href="../anhChuong/add.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-success">Thêm Trang</a>
+                                    <a href="../anhChuong/list.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-primary">Danh Sách Trang</a>
+                                    <a href="../chapter/edit.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-warning">Sửa</a>
+                                    <a href="../chapter/delete.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
                 </div>
             </div>
-        </div>
 
-        <div class="chapter-list">
-            <h2>Danh sách Chương</h2>
-            <?php while ($chuong = $chuongs->fetch_assoc()): ?>
-                <?php
-                // Get max page number for the chapter
-                $sql_anh = "SELECT MAX(so_trang) AS so_trang_lon_nhat FROM anh_chuong WHERE id_chuong = ?";
-                $stmt_anh = $conn->prepare($sql_anh);
-                if (!$stmt_anh) {
-                    continue;
-                }
-                
-                $stmt_anh->bind_param("i", $chuong['id_chuong']);
-                if (!$stmt_anh->execute()) {
-                    $stmt_anh->close();
-                    continue;
-                }
-                
-                $result_anh = $stmt_anh->get_result();
-                if (!$result_anh) {
-                    $stmt_anh->close();
-                    continue;
-                }
-                
-                $anh_data = $result_anh->fetch_assoc();
-                $so_trang_lon_nhat = (int)($anh_data['so_trang_lon_nhat'] ?? 0);
-                $stmt_anh->close();
-                ?>
-                <div class="chapter-item">
-                    <div class="chapter-info">
-                        <a href="../chapter/docChapter.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="chapter-title">
-                            Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>: <?php echo htmlspecialchars($chuong['tieu_de']); ?>
-                        </a>
-                        <span class="chapter-meta">Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'] ?? 'now')); ?></span>
-                    </div>
-                    <div class="chapter-actions">
-                        <a href="../anhChuong/add.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>&so_trang_bat_dau=<?php echo $so_trang_lon_nhat + 1; ?>" class="add-image-btn">Thêm Trang</a>
-                        <a href="../anhChuong/list.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="list-image-btn">Danh Sách Trang</a>
-                        <a href="../chapter/edit.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>&id_truyen=<?php echo $id_truyen; ?>" class="edit-btn">Sửa</a>
-                        <a href="../chapter/delete.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>&id_truyen=<?php echo $id_truyen; ?>" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
-                    </div>
+            <!-- Cột bình luận -->
+            <div class="comments-section">
+                <h2>Bình luận</h2>
+                <div class="comments-list">
+                    <?php if ($binhLuans->num_rows > 0): ?>
+                        <?php while ($comment = $binhLuans->fetch_assoc()): ?>
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <strong class="comment-author"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></strong>
+                                    <span class="comment-date"><?php echo date('d/m/Y H:i', strtotime($comment['ngay_binh_luan'])); ?></span>
+                                </div>
+                                <p class="comment-content"><?php echo htmlspecialchars($comment['noi_dung']); ?></p>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                    <?php endif; ?>
                 </div>
-            <?php endwhile; ?>
+
+                <?php if (isset($_SESSION['user'])): ?>
+                    <form action="../binhLuan/addComment.php" method="POST" class="comment-form">
+                        <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                        <textarea name="noi_dung" rows="3" placeholder="Viết bình luận..." required></textarea>
+                        <button type="submit">Gửi bình luận</button>
+                    </form>
+                <?php else: ?>
+                    <p class="login-prompt"><a href="../taiKhoan/login.php">Đăng nhập</a> để bình luận.</p>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -456,17 +576,15 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
                 });
         });
 
-        // Lấy tất cả các ngôi sao
         const stars = document.querySelectorAll('.star');
         const soSaoInput = document.getElementById('so_sao');
 
         // Thêm sự kiện click cho từng ngôi sao
         stars.forEach(star => {
-            // Khi click vào ngôi sao
             star.addEventListener('click', function () {
-                const value = this.getAttribute('data-value'); // Lấy giá trị của ngôi sao được chọn
-                soSaoInput.value = value; // Gán giá trị cho input ẩn
-                updateStars(value); // Cập nhật trạng thái các ngôi sao
+                const value = this.getAttribute('data-value');
+                soSaoInput.value = value;
+                updateStars(value);
             });
         });
 
@@ -475,9 +593,9 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
             stars.forEach(star => {
                 const starValue = star.getAttribute('data-value');
                 if (starValue <= value) {
-                    star.classList.add('selected'); // Làm nổi bật các ngôi sao được chọn
+                    star.classList.add('selected');
                 } else {
-                    star.classList.remove('selected'); // Bỏ làm nổi bật các ngôi sao không được chọn
+                    star.classList.remove('selected');
                 }
             });
         }
@@ -488,7 +606,6 @@ if (isset($_SESSION['user']) && is_array($_SESSION['user']) && isset($_SESSION['
     $stmt->close();
     $stmt_chuong->close();
     $stmt_min_chapter->close();
-    $stmt_rating->close();
     if (isset($stmt_check_follow)) {
         $stmt_check_follow->close();
     }

@@ -3,6 +3,7 @@ session_start();
 require_once '../../config/connect.php';
 require_once '../../controllers/chapterController.php';
 require_once '../../models/anhChuongModel.php';
+require_once '../../controllers/binhLuanController.php';
 
 // Kiểm tra tham số id_chuong
 if (!isset($_GET['id_chuong'])) {
@@ -13,12 +14,20 @@ $id_chuong = $_GET['id_chuong']; // Lấy ID chương từ URL
 
 $chapterController = new ChapterController($conn);
 $anhChuongModel = new AnhChuongModel($conn);
+$binhLuanController = new BinhLuanController($conn);
 
 // Lấy thông tin chương
 $chuong = $chapterController->layThongTinChapter($id_chuong);
 
+// Lấy thông tin chương trước và chương sau
+$chuong['id_chuong_truoc'] = $chapterController->layChuongTruoc($id_chuong);
+$chuong['id_chuong_sau'] = $chapterController->layChuongSau($id_chuong);
+
 // Lấy danh sách ảnh của chương
 $anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong, 'ASC'); // Sắp xếp tăng dần
+
+// Lấy danh sách bình luận của chương
+$binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
 ?>
 
 <!DOCTYPE html>
@@ -28,65 +37,557 @@ $anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong, 'ASC'); // Sắp xế
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($chuong['tieu_de']); ?></title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --background-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --hover-color: #4fc3f7;
+            --disabled-color: #555;
+            --comment-bg: #2a2a2a;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.fullscreen-mode {
+            overflow: hidden; /* Ẩn cuộn khi ở chế độ toàn màn hình */
+            padding: 0;
+            margin: 0;
+        }
+
+        body.fullscreen-mode .reader-header,
+        body.fullscreen-mode .page-navigation,
+        body.fullscreen-mode .comments-container,
+        body.fullscreen-mode .back-to-comic {
+            display: none; /* Ẩn các thành phần không cần thiết */
+        }
+
+        body.fullscreen-mode #reader-container {
+            padding: 0;
+            margin: 0;
+        }
+
+        body.fullscreen-mode #viewer-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body.fullscreen-mode .page-viewer.active {
+            max-height: 100vh;
+            max-width: 100vw;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        #reader-container {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 60px; /* Khoảng cách bằng chiều cao của .reader-header */
+        }
+
+        .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 5px;
+            background-color: var(--primary-color);
+            z-index: 1000;
+        }
+
+        .back-to-comic {
+            color: var(--primary-color);
+            font-size: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-to-comic:hover {
+            color: var(--hover-color);
+        }
+
+        .reader-header {
+            display: flex;
+            justify-content: center; /* Căn giữa nội dung */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            padding: 10px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            position: fixed; /* Cố định ở đầu trang */
+            top: 0;
+            left: 0;
+            width: 100%; /* Chiếm toàn bộ chiều rộng */
+            z-index: 1000; /* Đảm bảo nằm trên các thành phần khác */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Tạo hiệu ứng bóng */
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between; /* Tạo khoảng cách giữa các thành phần */
+            align-items: center;
+            width: 100%; /* Chiếm toàn bộ chiều rộng */
         }
 
         .chapter-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-color);
+            white-space: nowrap; /* Đảm bảo nội dung không bị xuống dòng */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Thêm dấu "..." nếu nội dung quá dài */
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
+            flex: 1; /* Đẩy tiêu đề vào giữa */
         }
 
-        .chapter-images img {
-            width: 100%;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .chapter-title span {
+            display: inline-block;
+            text-align: center;
         }
 
-        .back-link {
-            display: block;
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .control-btn:hover {
+            color: var(--hover-color);
+        }
+
+        #chapter-container {
+            display: flex;
+            flex-direction: row; /* Căn theo chiều ngang */
+            gap: 20px; /* Khoảng cách giữa hình ảnh và phần bình luận */
             margin-top: 20px;
-            text-align: center;
-            text-decoration: none;
-            color: #007bff;
+        }
+
+        #viewer-area {
+            flex: 2; /* Chiếm 2 phần không gian */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            overflow: hidden;
+        }
+
+        .page-viewer {
+            max-width: 100%;
+            max-height: 80vh; /* Đảm bảo ảnh không vượt quá chiều cao màn hình */
+            object-fit: contain; /* Đảm bảo ảnh giữ nguyên tỷ lệ mà không bị cắt */
+            display: none; /* Ẩn tất cả các trang ban đầu */
+        }
+
+        .page-viewer.active {
+            display: block; /* Chỉ hiển thị trang đang được chọn */
+        }
+
+        .page-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        .nav-btn:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            font-size: 16px;
+            color: var(--text-color);
+        }
+
+        .comments-container {
+            flex: 1; /* Chiếm 1 phần không gian */
+            max-width: 400px; /* Đặt chiều rộng tối đa cho phần bình luận */
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            overflow-y: auto; /* Thêm cuộn dọc nếu nội dung quá dài */
+            height: auto;
+        }
+
+        .comments-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .comment-list {
+            margin-bottom: 20px;
+        }
+
+        .comment-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: var(--comment-bg);
+            border-radius: 5px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .comment-content {
+            margin-top: 10px;
             font-size: 16px;
         }
 
-        .back-link:hover {
+        .comment-form {
+            margin-top: 20px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        .comment-submit {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .comment-submit:hover {
+            background-color: var(--hover-color);
+        }
+
+        .login-prompt {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .login-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .login-link:hover {
             text-decoration: underline;
         }
+
+        .chapter-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chapter-navigation .nav-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .chapter-navigation .nav-btn:hover {
+            background-color: var(--hover-color);
+        }
+
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <?php include '../shares/header.php'; ?>
+    <div id="reader-container">
+        <!-- Reading progress bar -->
+        <div class="reading-progress" id="reading-progress"></div>
 
-    <!-- Nội dung chính -->
-    <div class="container">
-        <h1 class="chapter-title"><?php echo htmlspecialchars($chuong['tieu_de']); ?></h1>
-        <div class="chapter-images">
-            <?php while ($anh = $anh_chuongs->fetch_assoc()): ?>
-                <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
-            <?php endwhile; ?>
+        <!-- Header with controls -->
+        <header class="reader-header" id="reader-header">
+            <div class="header-content">
+                <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-to-comic" title="Quay lại truyện">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+                <div class="chapter-title">
+                    <span>
+                        <?php echo htmlspecialchars($chuong['ten_truyen']); ?> - 
+                        <?php echo htmlspecialchars($chuong['tieu_de']); ?> 
+                        (Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>)
+                    </span>
+                </div>
+                <button class="control-btn" id="fullscreen-btn" title="Toàn màn hình">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Chapter container -->
+        <div id="chapter-container">
+            <!-- Main viewer area -->
+            <div id="viewer-area">
+                <?php while ($anh = $anh_chuongs->fetch_assoc()): ?>
+                    <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" 
+                         alt="Trang <?php echo $anh['so_trang']; ?>" 
+                         class="page-viewer" 
+                         data-page="<?php echo $anh['so_trang']; ?>">
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Comments section -->
+            <div class="comments-container">
+                <h2 class="comments-title">Bình luận</h2>
+                
+                <div class="comment-list">
+                    <?php if ($binhLuans->num_rows > 0): ?>
+                        <?php while ($comment = $binhLuans->fetch_assoc()): ?>
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <span class="comment-user"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></span>
+                                    <span class="comment-date"><?php echo date('d/m/Y H:i', strtotime($comment['ngay_binh_luan'])); ?></span>
+                                </div>
+                                <div class="comment-content">
+                                    <?php echo htmlspecialchars($comment['noi_dung']); ?>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>Chưa có bình luận nào.</p>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (isset($_SESSION['user'])): ?>
+                    <form action="../binhLuan/addChapterComment.php" method="POST" class="comment-form">
+                        <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
+                        <textarea name="noi_dung" class="comment-textarea" placeholder="Viết bình luận của bạn..." required></textarea>
+                        <button type="submit" class="comment-submit">Gửi bình luận</button>
+                    </form>
+                <?php else: ?>
+                    <div class="login-prompt">
+                        <p>Vui lòng <a href="../taiKhoan/login.php" class="login-link">đăng nhập</a> để bình luận.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-link">Quay lại chi tiết truyện</a>
+
+        <!-- Page navigation -->
+        <div class="page-navigation" id="page-navigation">
+            <button class="nav-btn" id="prev-page" title="Trang trước">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="page-indicator">
+                <span id="current-page">1</span> / <span id="total-pages"><?php echo $anh_chuongs->num_rows; ?></span>
+            </div>
+            <button class="nav-btn" id="next-page" title="Trang sau">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+
+        <!-- Chapter navigation -->
+        <div class="chapter-navigation">
+            <?php if (!empty($chuong['id_chuong_truoc'])): ?>
+                <a href="docChapter.php?id_chuong=<?php echo $chuong['id_chuong_truoc']; ?>" class="nav-btn">Chương trước</a>
+            <?php endif; ?>
+
+            <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="nav-btn">Danh sách chương</a>
+
+            <?php if (!empty($chuong['id_chuong_sau'])): ?>
+                <a href="docChapter.php?id_chuong=<?php echo $chuong['id_chuong_sau']; ?>" class="nav-btn">Chương sau</a>
+            <?php endif; ?>
+        </div>
     </div>
 
-    <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const pages = document.querySelectorAll('.page-viewer');
+            const currentPageEl = document.getElementById('current-page');
+            const totalPagesEl = document.getElementById('total-pages');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const viewerArea = document.getElementById('viewer-area');
+            let currentPage = 0;
+
+
+            // Hiển thị trang hiện tại
+            function showPage(index) {
+                pages.forEach((page, i) => {
+                    page.classList.toggle('active', i === index);
+                });
+                currentPageEl.textContent = index + 1;
+                currentPage = index;
+
+                // Cập nhật trạng thái của các ô số trang
+                const pageNumbers = document.querySelectorAll('.page-number');
+                pageNumbers.forEach((pageNumber, i) => {
+                    pageNumber.classList.toggle('active', i === index);
+                });
+
+                // Vô hiệu hóa nút nếu ở trang đầu hoặc cuối
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === pages.length - 1;
+            }
+
+            // Hiển thị trang đầu tiên
+            showPage(currentPage);
+
+            // Chuyển sang trang trước
+            function prevPage() {
+                if (currentPage > 0) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            }
+
+            // Chuyển sang trang tiếp theo
+            function nextPage() {
+                if (currentPage < pages.length - 1) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            }
+
+            // Chuyển đến trang cụ thể
+            function goToPage(index) {
+                if (index >= 0 && index < pages.length) {
+                    showPage(index);
+                }
+            }
+
+            // Gắn sự kiện cho nút chuyển trang
+            prevBtn.addEventListener('click', prevPage);
+            nextBtn.addEventListener('click', nextPage);
+
+            // Xử lý sự kiện phím mũi tên
+            document.addEventListener('keydown', function (e) {
+                // Chỉ xử lý nếu đang ở chế độ fullscreen
+                if (document.fullscreenElement) {
+                    if (e.key === 'ArrowLeft') {
+                        prevPage();
+                        e.preventDefault(); // Ngăn hành vi mặc định
+                    } else if (e.key === 'ArrowRight') {
+                        nextPage();
+                        e.preventDefault(); // Ngăn hành vi mặc định
+                    } else if (e.key === 'Escape') {
+                        // Thoát fullscreen khi nhấn ESC
+                        document.exitFullscreen();
+                    }
+                } else {
+                    // Xử lý bình thường khi không ở chế độ fullscreen
+                    if (e.key === 'ArrowLeft') {
+                        prevPage();
+                    } else if (e.key === 'ArrowRight') {
+                        nextPage();
+                    }
+                }
+            });
+
+            // Kích hoạt chế độ toàn màn hình
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    viewerArea.requestFullscreen().catch(err => {
+                        console.error(`Lỗi khi vào chế độ toàn màn hình: ${err.message}`);
+                    });
+                    document.body.classList.add('fullscreen-mode');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                    // Hiển thị thanh điều hướng khi vào fullscreen
+                    showNavigationBar();
+                } else {
+                    document.exitFullscreen().catch(err => {
+                        console.error(`Lỗi khi thoát chế độ toàn màn hình: ${err.message}`);
+                    });
+                    document.body.classList.remove('fullscreen-mode');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+
+            // Gắn sự kiện cho nút toàn màn hình
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // Thoát chế độ toàn màn hình khi người dùng bấm ESC
+            document.addEventListener('fullscreenchange', function () {
+                if (!document.fullscreenElement) {
+                    document.body.classList.remove('fullscreen-mode');
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>'; // Đặt lại biểu tượng
+                }
+            });
+
+            // Xử lý sự kiện nhấn vào hai bên của trang
+            viewerArea.addEventListener('click', function (e) {
+                // Chỉ xử lý nếu đang ở chế độ fullscreen
+                if (document.fullscreenElement) {
+                    const clickX = e.clientX;
+                    const windowWidth = window.innerWidth;
+
+                    // Tính toán vùng click chính xác hơn
+                    const clickZone = windowWidth / 4; // Chia màn hình thành 4 phần
+
+                    if (clickX < clickZone) {
+                        prevPage(); // Nhấn 25% bên trái để chuyển sang trang trước
+                    } else if (clickX > windowWidth - clickZone) {
+                        nextPage(); // Nhấn 25% bên phải để chuyển sang trang sau
+                    }
+                    // Click ở giữa không làm gì để tránh chuyển trang nhầm
+                }
+            });
+
+
+
+            // Khởi tạo thanh điều hướng
+
+        });
+    </script>
 </body>
 </html>
