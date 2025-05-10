@@ -12,60 +12,7 @@ $controller->themTheLoai();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thêm Thể Loại</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        form {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        form h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        form input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        form button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        form button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/theLoai/add.css">
 </head>
 <body>
     <!-- Header -->
