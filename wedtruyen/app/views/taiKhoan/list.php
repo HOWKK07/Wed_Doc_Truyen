@@ -17,61 +17,7 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Tài Khoản</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        .actions a {
-            margin-right: 10px;
-            text-decoration: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .actions .edit {
-            background-color: #007bff;
-        }
-
-        .actions .delete {
-            background-color: #dc3545;
-        }
-
-        .actions a:hover {
-            opacity: 0.8;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/taiKhoan/list.css">
 </head>
 <body>
     <!-- Header -->

@@ -9,47 +9,7 @@ require_once 'app/config/connect.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Chủ</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        .truyen-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .truyen-item {
-            width: 200px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .truyen-item img {
-            width: 100%;
-            height: 270px;
-            object-fit: cover;
-        }
-
-        .truyen-item h3 {
-            font-size: 16px;
-            margin: 10px 0;
-            color: #333;
-        }
-    </style>
+     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/trangChu.css">
 </head>
 <body>
     <!-- Header -->
