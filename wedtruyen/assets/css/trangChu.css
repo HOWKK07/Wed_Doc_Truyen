@@ -19,21 +19,254 @@ body {
     width: 200px;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
     cursor: pointer;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.truyen-item:hover {
+    transform: translateY(-5px);
+}
+
+.truyen-info {
+    padding: 10px;
+    background-color: #fff;
 }
 
 .truyen-item img {
     width: 100%;
     height: 270px;
     object-fit: cover;
+    display: block;
 }
 
 .truyen-item h3 {
     font-size: 16px;
-    margin: 10px 0;
+    margin: 0 0 8px 0;
     color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chapter-info {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.view-count {
+    color: #888;
+    font-size: 13px;
+}
+
+.update-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.time-badge {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.hot-badge {
+    background-color: #ff4757;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Banner styles */
+.banner {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.banner-slider {
+    display: flex;
+    width: 300%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.banner-image {
+    width: 33.333%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background 0.3s;
+}
+
+.banner-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.banner-btn.prev {
+    left: 20px;
+}
+
+.banner-btn.next {
+    right: 20px;
+}
+
+/* Updated Ranking styles */
+.ranking-section {
+    margin: 50px 0;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-section h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.ranking-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+    scroll-behavior: smooth;
+}
+
+.ranking-item {
+    flex: 0 0 auto;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.ranking-item:hover {
+    transform: translateY(-5px);
+}
+
+.rank-number {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.rank-1 {
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 2px solid #ffd700;
+}
+
+.rank-2 {
+    background-color: rgba(192, 192, 192, 0.1);
+    border: 2px solid #c0c0c0;
+}
+
+.rank-3 {
+    background-color: rgba(205, 127, 50, 0.1);
+    border: 2px solid #cd7f32;
+}
+
+.rank-1 .rank-number {
+    color: #ffd700;
+    border: 2px solid #ffd700;
+}
+
+.rank-2 .rank-number {
+    color: #c0c0c0;
+    border: 2px solid #c0c0c0;
+}
+
+.rank-3 .rank-number {
+    color: #cd7f32;
+    border: 2px solid #cd7f32;
+}
+
+.ranking-item img {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.ranking-info {
+    text-align: center;
+    width: 100%;
+}
+
+.ranking-info h3 {
+    margin: 10px 0 5px;
+    font-size: 16px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ranking-info p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Custom scrollbar for ranking container */
+.ranking-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.ranking-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.ranking-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.ranking-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
