@@ -36,6 +36,8 @@ if ($anh) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $id_chuong, $so_trang);
     $stmt->execute();
+} else {
+    echo "Lỗi: Không tìm thấy ID chương hoặc ID truyện.";
 }
 
 header("Location: list.php?id_chuong=$id_chuong");

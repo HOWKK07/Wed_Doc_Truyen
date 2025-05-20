@@ -7,11 +7,10 @@ require_once '../../controllers/binhLuanController.php';
 require_once '../../controllers/LichSuDocController.php';
 
 // Kiểm tra tham số id_chuong
-if (!isset($_GET['id_chuong'])) {
-    die("Lỗi: Không tìm thấy ID chương.");
+if (!isset($_GET['id_chuong']) || !is_numeric($_GET['id_chuong'])) {
+    die("Lỗi: Không tìm thấy ID chương hợp lệ.");
 }
-
-$id_chuong = $_GET['id_chuong']; // Lấy ID chương từ URL
+$id_chuong = (int)$_GET['id_chuong']; // Lấy ID chương từ URL
 
 $chapterController = new ChapterController($conn);
 $anhChuongModel = new AnhChuongModel($conn);
@@ -32,9 +31,32 @@ $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
 
 if (isset($_SESSION['user'])) {
     $id_nguoidung = $_SESSION['user']['id_nguoidung'];
-    luuLichSuDoc($conn, $id_nguoidung, $id_chuong);
 
-tangLuotXemChuong1Lan1Ngay($conn, $id_nguoidung, $id_chuong);
+    tangLuotXemChuong($conn, $id_nguoidung, $id_chuong);
+
+    // Lấy lại id_truyen từ database nếu $chuong['id_truyen'] chưa có
+    if (empty($chuong['id_truyen'])) {
+        $stmt = $conn->prepare("SELECT id_truyen FROM chuong WHERE id_chuong = ?");
+        $stmt->bind_param("i", $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $id_truyen = $row ? $row['id_truyen'] : null;
+    } else {
+        $id_truyen = $chuong['id_truyen'];
+    }
+
+    // Chỉ lưu lịch sử đọc nếu $id_chuong hợp lệ
+    if (!empty($id_chuong) && is_numeric($id_chuong)) {
+        luuLichSuDoc($conn, $id_nguoidung, (int)$id_chuong);
+    }
+
+    // Chỉ cập nhật nếu có id_truyen
+    if ($id_truyen) {
+        $stmt = $conn->prepare("UPDATE truyen SET luot_xem = (SELECT SUM(luot_xem) FROM chuong WHERE id_truyen = ?) WHERE id_truyen = ?");
+        $stmt->bind_param("ii", $id_truyen, $id_truyen);
+        $stmt->execute();
+    }
 }
 ?>
 
@@ -42,7 +64,7 @@ tangLuotXemChuong1Lan1Ngay($conn, $id_nguoidung, $id_chuong);
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($chuong['tieu_de']); ?></title>
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/chapter/docChapter.css">
 </head>
@@ -59,9 +81,12 @@ tangLuotXemChuong1Lan1Ngay($conn, $id_nguoidung, $id_chuong);
                 </a>
                 <div class="chapter-title">
                     <span>
-                        <?php echo htmlspecialchars($chuong['ten_truyen']); ?> - 
-                        <?php echo htmlspecialchars($chuong['tieu_de']); ?> 
-                        (Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>)
+                        <!-- Dòng hiển thị tên truyện -->
+                        <?= htmlspecialchars($chuong['ten_truyen'] ?? '') ?> - 
+                        <!-- Dòng hiển thị tiêu đề chương -->
+                        <?= htmlspecialchars($chuong['tieu_de'] ?? '') ?> 
+                        <!-- Dòng hiển thị số chương -->
+                        (Chương <?= htmlspecialchars($chuong['so_chuong'] ?? '') ?>)
                     </span>
                 </div>
                 <button class="control-btn" id="fullscreen-btn" title="Toàn màn hình">
