@@ -1,7 +1,7 @@
 <?php
-require_once '../../config/connect.php';
-require_once '../../models/truyenModel.php';
-require_once '../../helpers/utils.php'; // Đường dẫn đến file chứa hàm safeOutput()
+require_once __DIR__ . '/../config/connect.php';
+require_once __DIR__ . '/../models/truyenModel.php';
+require_once __DIR__ . '/../helpers/utils.php'; // Đường dẫn đến file chứa hàm safeOutput()
 
 class TruyenController {
     private $model;
@@ -129,6 +129,78 @@ class TruyenController {
         // Chuyển hướng về trang quản lý truyện
         header("Location: list.php?success=1");
         exit();
+    }
+
+    // ==== API cho RESTful ====
+    public function getAllTruyen() {
+        $list = $this->model->layTatCaTruyen();
+        echo json_encode($list);
+    }
+
+    public function getTruyenById($id) {
+        $info = $this->model->layThongTinTruyen($id);
+        if ($info) {
+            $info['the_loai'] = $this->model->layTheLoaiCuaTruyen($id);
+            echo json_encode($info);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Truyện không tồn tại']);
+        }
+    }
+
+    public function createTruyen() {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Dữ liệu không hợp lệ']);
+            return;
+        }
+        $ten_truyen = $data['ten_truyen'] ?? null;
+        $tac_gia = $data['tac_gia'] ?? null;
+        $id_loai_truyen = $data['id_loai_truyen'] ?? null;
+        $mo_ta = $data['mo_ta'] ?? null;
+        $trang_thai = $data['trang_thai'] ?? 'Đang ra';
+        $nam_phat_hanh = $data['nam_phat_hanh'] ?? null;
+        $the_loai = $data['the_loai'] ?? [];
+        $anh_bia = $data['anh_bia'] ?? null;
+        $id_truyen = $this->model->themTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
+        foreach ($the_loai as $id_theloai) {
+            $this->model->themTheLoaiChoTruyen($id_truyen, $id_theloai);
+        }
+        echo json_encode(['success' => true, 'id_truyen' => $id_truyen]);
+    }
+
+    public function updateTruyen($id) {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Dữ liệu không hợp lệ']);
+            return;
+        }
+        $ten_truyen = $data['ten_truyen'] ?? null;
+        $tac_gia = $data['tac_gia'] ?? null;
+        $id_loai_truyen = $data['id_loai_truyen'] ?? null;
+        $mo_ta = $data['mo_ta'] ?? null;
+        $trang_thai = $data['trang_thai'] ?? 'Đang ra';
+        $nam_phat_hanh = $data['nam_phat_hanh'] ?? null;
+        $the_loai = $data['the_loai'] ?? [];
+        $anh_bia = $data['anh_bia'] ?? null;
+        $this->model->capNhatTruyen($id, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
+        $this->model->xoaTheLoaiTruyen($id);
+        foreach ($the_loai as $id_theloai) {
+            $this->model->themTheLoaiChoTruyen($id, $id_theloai);
+        }
+        echo json_encode(['success' => true]);
+    }
+
+    public function deleteTruyen($id) {
+        $this->model->xoaTruyen($id);
+        echo json_encode(['success' => true]);
+    }
+
+    public function searchTruyen($keyword) {
+        $result = $this->model->timKiemTruyen($keyword);
+        return json_encode(['status' => 'success', 'data' => $result]);
     }
 }
 ?>

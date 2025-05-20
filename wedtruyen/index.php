@@ -13,7 +13,99 @@ require_once 'app/config/connect.php';
 </head>
 <body>
     <!-- Header -->
-    <?php include 'app/views/shares/header.php'; ?>
+    <?php include_once __DIR__ . '/app/views/shares/header.php'; ?>
+
+    <div class="homepage-banner-carousel">
+        <div class="carousel-track">
+            <img src="/Wed_Doc_Truyen/wedtruyen/assets/img/banner1.jpg" alt="Banner 1" class="carousel-img">
+            <img src="/Wed_Doc_Truyen/wedtruyen/assets/img/banner2.jpg" alt="Banner 2" class="carousel-img">
+            <img src="/Wed_Doc_Truyen/wedtruyen/assets/img/banner3.jpg" alt="Banner 3" class="carousel-img">
+        </div>
+        <div class="carousel-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+
+    <style>
+    .homepage-banner-carousel {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto 30px auto;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .carousel-track {
+        display: flex;
+        transition: transform 0.7s cubic-bezier(.77,0,.18,1);
+        will-change: transform;
+    }
+    .carousel-img {
+        width: 100%;
+        min-width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        user-select: none;
+        pointer-events: none;
+    }
+    .carousel-dots {
+        position: absolute;
+        left: 0; right: 0; bottom: 12px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+    .carousel-dots .dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        opacity: 0.6;
+        border: 1.5px solid #007bff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .carousel-dots .dot.active {
+        opacity: 1;
+        background: #007bff;
+    }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const track = document.querySelector('.carousel-track');
+        const dots = document.querySelectorAll('.carousel-dots .dot');
+        const total = 3;
+        let current = 0;
+        let timer = null;
+
+        function goTo(index) {
+            current = index;
+            track.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        }
+
+        function next() {
+            goTo((current + 1) % total);
+        }
+
+        dots.forEach((dot, i) => {
+            dot.addEventListener('click', () => {
+                goTo(i);
+                resetAuto();
+            });
+        });
+
+        function resetAuto() {
+            clearInterval(timer);
+            timer = setInterval(next, 4000);
+        }
+
+        resetAuto();
+        goTo(0);
+    });
+    </script>
 
     <!-- Nội dung chính -->
     <div class="content">

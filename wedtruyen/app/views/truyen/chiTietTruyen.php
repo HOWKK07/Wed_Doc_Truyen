@@ -212,8 +212,8 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
             <div class="comments-section">
                 <h2>Bình luận</h2>
                 <div class="comments-list">
-                    <?php if ($binhLuans->num_rows > 0): ?>
-                        <?php while ($comment = $binhLuans->fetch_assoc()): ?>
+                    <?php if (is_array($binhLuans) && count($binhLuans) > 0): ?>
+                        <?php foreach ($binhLuans as $comment): ?>
                             <div class="comment-item">
                                 <div class="comment-header">
                                     <strong class="comment-author"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></strong>
@@ -221,7 +221,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                 </div>
                                 <p class="comment-content"><?php echo htmlspecialchars($comment['noi_dung']); ?></p>
                             </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     <?php else: ?>
                         <p class="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
                     <?php endif; ?>

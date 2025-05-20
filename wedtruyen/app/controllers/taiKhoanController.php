@@ -1,12 +1,90 @@
 <?php
-require_once '../../config/connect.php';
-require_once '../../models/taiKhoanModel.php';
+require_once __DIR__ . '/../config/connect.php';
+require_once __DIR__ . '/../models/taiKhoanModel.php';
+require_once __DIR__ . '/../helpers/utils.php';
 
 class TaiKhoanController {
     private $model;
 
     public function __construct($conn) {
         $this->model = new TaiKhoanModel($conn);
+    }
+
+    // API Methods
+    public function getAllUsers() {
+        $users = $this->model->layTatCaNguoiDung();
+        echo json_encode($users);
+    }
+
+    public function getUserById($id) {
+        $user = $this->model->layThongTinNguoiDung($id);
+        if ($user) {
+            echo json_encode($user);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Người dùng không tồn tại']);
+        }
+    }
+
+    public function createUser() {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Dữ liệu không hợp lệ']);
+            return;
+        }
+
+        $ten_dang_nhap = $data['ten_dang_nhap'] ?? null;
+        $mat_khau = $data['mat_khau'] ?? null;
+        $email = $data['email'] ?? null;
+        $vai_tro = $data['vai_tro'] ?? 'nguoidung';
+
+        // Mã hóa mật khẩu
+        $mat_khau_hash = password_hash($mat_khau, PASSWORD_DEFAULT);
+
+        try {
+            $id_nguoidung = $this->model->themNguoiDung($ten_dang_nhap, $mat_khau_hash, $email, $vai_tro);
+            echo json_encode(['success' => true, 'id_nguoidung' => $id_nguoidung]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function updateUser($id) {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Dữ liệu không hợp lệ']);
+            return;
+        }
+
+        $email = $data['email'] ?? null;
+        $vai_tro = $data['vai_tro'] ?? null;
+        $mat_khau = $data['mat_khau'] ?? null;
+
+        try {
+            if ($mat_khau) {
+                $mat_khau_hash = password_hash($mat_khau, PASSWORD_DEFAULT);
+                $this->model->capNhatNguoiDung($id, $email, $vai_tro, $mat_khau_hash);
+            } else {
+                $this->model->capNhatNguoiDung($id, $email, $vai_tro);
+            }
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteUser($id) {
+        try {
+            $this->model->xoaNguoiDung($id);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
     }
 
     // Xử lý đăng ký

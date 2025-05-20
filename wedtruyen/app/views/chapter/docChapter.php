@@ -4,6 +4,7 @@ require_once '../../config/connect.php';
 require_once '../../controllers/chapterController.php';
 require_once '../../models/anhChuongModel.php';
 require_once '../../controllers/binhLuanController.php';
+require_once '../../controllers/truyenController.php';
 
 // Kiểm tra tham số id_chuong
 if (!isset($_GET['id_chuong'])) {
@@ -15,9 +16,13 @@ $id_chuong = $_GET['id_chuong']; // Lấy ID chương từ URL
 $chapterController = new ChapterController($conn);
 $anhChuongModel = new AnhChuongModel($conn);
 $binhLuanController = new BinhLuanController($conn);
+$truyenController = new TruyenController($conn);
 
 // Lấy thông tin chương
 $chuong = $chapterController->layThongTinChapter($id_chuong);
+
+// Lấy thông tin truyện
+$truyen = $truyenController->layThongTinTruyen($chuong['id_truyen']);
 
 // Lấy thông tin chương trước và chương sau
 $chuong['id_chuong_truoc'] = $chapterController->layChuongTruoc($id_chuong);
@@ -79,8 +84,8 @@ $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
                 <h2 class="comments-title">Bình luận</h2>
                 
                 <div class="comment-list">
-                    <?php if ($binhLuans->num_rows > 0): ?>
-                        <?php while ($comment = $binhLuans->fetch_assoc()): ?>
+                    <?php if (is_array($binhLuans) && count($binhLuans) > 0): ?>
+                        <?php foreach ($binhLuans as $comment): ?>
                             <div class="comment-item">
                                 <div class="comment-header">
                                     <span class="comment-user"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></span>
@@ -90,7 +95,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
                                     <?php echo htmlspecialchars($comment['noi_dung']); ?>
                                 </div>
                             </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     <?php else: ?>
                         <p>Chưa có bình luận nào.</p>
                     <?php endif; ?>
@@ -280,6 +285,32 @@ $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
             // Khởi tạo thanh điều hướng
 
         });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy thông tin chương từ PHP
+        const chapterInfo = {
+            id_truyen: <?php echo json_encode($chuong['id_truyen']); ?>,
+            ten_truyen: <?php echo json_encode($chuong['ten_truyen']); ?>,
+            anh_bia: <?php echo json_encode($truyen['anh_bia'] ?? ''); ?>,
+            id_chuong: <?php echo json_encode($chuong['id_chuong']); ?>,
+            so_chuong: <?php echo json_encode($chuong['so_chuong']); ?>,
+            tieu_de: <?php echo json_encode($chuong['tieu_de']); ?>,
+            ngay_doc: new Date().toLocaleString('vi-VN'), // Thêm ngày đọc
+            trang_thai: "Đã đọc" // Thêm trạng thái
+        };
+
+        // Lấy lịch sử hiện tại
+        let history = JSON.parse(localStorage.getItem('reading_history') || '[]');
+        // Xóa bản ghi cũ nếu đã có
+        history = history.filter(item => item.id_chuong != chapterInfo.id_chuong);
+        // Thêm mới lên đầu
+        history.unshift(chapterInfo);
+        // Giới hạn số lượng (ví dụ 20)
+        history = history.slice(0, 20);
+        // Lưu lại vào localStorage
+        localStorage.setItem('reading_history', JSON.stringify(history));
+    });
     </script>
 </body>
 </html>

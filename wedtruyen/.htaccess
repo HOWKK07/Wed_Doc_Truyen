@@ -1,13 +1,13 @@
 # Bật chế độ rewrite
 RewriteEngine On
 
-# Đặt thư mục gốc của ứng dụng
-RewriteBase /Wed_Doc_Truyen/wedtruyen/
+# Nếu là file hoặc thư mục thật thì cho truy cập bình thường
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# Chuyển hướng tất cả các yêu cầu không phải file hoặc thư mục thực tế đến index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L,QSA]
+# Còn lại mới chuyển về index.php
+RewriteRule ^ index.php [QSA,L]
 
 # Đặt UTF-8 làm mã hóa mặc định
 AddDefaultCharset utf-8

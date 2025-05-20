@@ -145,11 +145,54 @@ class TruyenModel {
     }
 
     /**
+     * Lấy tất cả truyện
+     * @return array
+     */
+    public function layTatCaTruyen() {
+        $sql = "SELECT * FROM truyen ORDER BY ngay_tao DESC";
+        $result = $this->conn->query($sql);
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Xóa truyện theo ID
+     * @param int $id_truyen
+     * @return bool
+     */
+    public function xoaTruyen($id_truyen) {
+        // Xóa các bản ghi liên quan trong bảng truyen_theloai
+        $this->xoaTheLoaiTruyen($id_truyen);
+        
+        // Xóa truyện
+        $sql = "DELETE FROM truyen WHERE id_truyen = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id_truyen);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Không thể xóa truyện: " . $stmt->error);
+        }
+        
+        return true;
+    }
+
+    /**
      * Lấy kết nối cơ sở dữ liệu
      * @return mysqli
      */
     public function getConnection() {
         return $this->conn;
+    }
+
+    public function timKiemTruyen($keyword) {
+        $sql = "SELECT t.id_truyen, t.ten_truyen, t.tac_gia, t.anh_bia, 
+                       (SELECT COUNT(*) FROM chuong WHERE chuong.id_truyen = t.id_truyen) as so_chuong
+                FROM truyen t
+                WHERE t.ten_truyen LIKE CONCAT('%', ?, '%')
+                LIMIT 10";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $keyword);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }
 
