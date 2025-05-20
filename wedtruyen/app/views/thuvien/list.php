@@ -53,13 +53,34 @@ $truyenList = $thuVienController->layThuVien($id_nguoidung);
         <div class="truyen-list">
             <?php if ($truyenList->num_rows > 0): ?>
                 <?php while ($row = $truyenList->fetch_assoc()): ?>
-                    <div class="truyen-item" data-id="<?php echo htmlspecialchars($row['id_truyen']); ?>">
-                        <!-- Nút X để xóa -->
-                        <button class="delete-btn" onclick="removeFromLibrary(<?php echo htmlspecialchars($row['id_truyen']); ?>)">×</button>
-                        <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo htmlspecialchars($row['id_truyen']); ?>">
-                            <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($row['anh_bia']); ?>" alt="<?php echo htmlspecialchars($row['ten_truyen']); ?>">
-                        </a>
-                        <h3><?php echo htmlspecialchars($row['ten_truyen']); ?></h3>
+                    <div class="history-card">
+                        <div class="card-img">
+                            <!-- Nút X để xóa -->
+                            <button class="delete-btn" onclick="removeFromLibrary(<?php echo htmlspecialchars($row['id_truyen']); ?>)">×</button>
+                            <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $row['id_truyen']; ?>">
+                                <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($row['anh_bia']); ?>" alt="<?php echo htmlspecialchars($row['ten_truyen']); ?>">
+                                <div class="chapter-badge">
+                                    <?php echo $row['max_so_chuong']; ?>
+                                </div>
+                                <?php if ($row['trang_thai'] == 'Hoàn thành'): ?>
+                                    <div class="status-badge">HOÀN TẤT</div>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title"><?php echo htmlspecialchars($row['ten_truyen']); ?></div>
+                            <div class="card-desc">
+                                <?php if ($row['id_chuong']): ?>
+                                    <span>Bạn đã đọc đến chương <?php echo htmlspecialchars($row['so_chuong']); ?>: <?php echo htmlspecialchars($row['tieu_de']); ?></span><br>
+                                    <span class="read-time">Lúc <?php echo date('d/m/Y H:i', strtotime($row['thoi_gian_doc'])); ?></span>
+                                <?php else: ?>
+                                    <span>Bạn chưa đọc truyện này</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($row['id_chuong']): ?>
+                                <a class="continue-btn" href="../chapter/docChapter.php?id_chuong=<?php echo $row['id_chuong']; ?>">&#187;Xem tiếp</a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>

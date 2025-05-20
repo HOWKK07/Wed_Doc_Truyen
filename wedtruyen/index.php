@@ -49,6 +49,7 @@ require_once 'app/config/connect.php';
                     $max_chapter = $row['max_chapter'] ?? 0;
                     $trang_thai = $row['trang_thai'];
                     $danh_gia = $row['danh_gia'] ?? 0;
+                    $luot_xem = (int)($row['luot_xem'] ?? 0);
             ?>
                 <div class="truyen-item">
                     <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=<?= $id_truyen ?>">
@@ -64,6 +65,9 @@ require_once 'app/config/connect.php';
                         </div>
                         <div class="truyen-title">
                             <h3><?= $ten_truyen ?></h3>
+                            <div class="truyen-meta">
+                                <span class="truyen-views">👁 <?= number_format($luot_xem) ?> lượt xem</span>
+                            </div>
                         </div>
                     </a>
                 </div>

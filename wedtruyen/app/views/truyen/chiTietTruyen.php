@@ -112,7 +112,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200px, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($truyen['ten_truyen'] ?? 'Chi Tiết Truyện'); ?></title>
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/truyen/chiTietTruyen.css">
 </head>
@@ -141,7 +141,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                         </div>
                         <p><strong>Năm xuất bản:</strong> <?php echo htmlspecialchars($truyen['nam_phat_hanh'] ?? ''); ?></p>
                         <p><strong>Trạng thái:</strong> <?php echo htmlspecialchars($truyen['trang_thai'] ?? ''); ?></p>
-                        
+                        <p><strong>Lượt xem:</strong> <?php echo number_format((int)($truyen['luot_xem'] ?? 0)); ?> </p>
                         <!-- Rating Section -->
                         <div class="rating-section">
                             <p><strong>Đánh giá:</strong> <?php echo $avg_rating; ?> / 5 (<?php echo $total_ratings; ?> lượt)</p>
@@ -194,7 +194,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                 </a>
                                 <span class="chapter-meta">
                                     Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'] ?? 'now')); ?>
-                                    | 👁️ <?php echo (int)($chuong['luot_xem'] ?? 0); ?> lượt xem
+                                    | 👁 <?php echo (int)($chuong['luot_xem'] ?? 0); ?> lượt xem
                                 </span>
                             </div>
                             <!-- Các nút chức năng -->
@@ -203,7 +203,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                     <a href="../anhChuong/add.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-success">Thêm Trang</a>
                                     <a href="../anhChuong/list.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-primary">Danh Sách Trang</a>
                                     <a href="../chapter/edit.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-warning">Sửa</a>
-                                    <a href="../chapter/delete.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
+                                    <a href="../chapter/delete.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>&id_truyen=<?php echo htmlspecialchars($chuong['id_truyen']); ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
                                 </div>
                             <?php endif; ?>
                         </div>

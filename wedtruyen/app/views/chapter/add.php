@@ -3,12 +3,21 @@ session_start();
 require_once '../../config/connect.php';
 require_once '../../controllers/chapterController.php';
 
+// Kiểm tra id_truyen
 if (!isset($_GET['id_truyen']) || empty($_GET['id_truyen'])) {
     die("Lỗi: Không tìm thấy ID truyện.");
 }
 
-$id_truyen = $_GET['id_truyen'];
-$ten_truyen = isset($_GET['ten_truyen']) ? urldecode($_GET['ten_truyen']) : '';
+$id_truyen = (int)$_GET['id_truyen'];
+
+// Lấy tên truyện từ database
+$ten_truyen = '';
+$stmt = $conn->prepare("SELECT ten_truyen FROM truyen WHERE id_truyen = ?");
+$stmt->bind_param("i", $id_truyen);
+$stmt->execute();
+$stmt->bind_result($ten_truyen);
+$stmt->fetch();
+$stmt->close();
 
 $controller = new ChapterController($conn);
 
@@ -20,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -38,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form action="" method="POST">
             <h1>Thêm Chapter</h1>
             <p><strong>Truyện:</strong> <?php echo htmlspecialchars($ten_truyen); ?></p>
-            <input type="hidden" name="id_truyen" value="<?php echo $_GET['id_truyen']; ?>">
+            <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
             <label for="so_chuong">Số chương:</label>
             <input type="number" id="so_chuong" name="so_chuong" required>
 

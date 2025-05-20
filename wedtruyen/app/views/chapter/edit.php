@@ -18,6 +18,11 @@ if (!$chapter) {
     die("Lỗi: Không tìm thấy thông tin chương.");
 }
 
+// Nếu thiếu id_truyen trên URL, lấy từ dữ liệu chương
+if (!$id_truyen && isset($chapter['id_truyen'])) {
+    $id_truyen = $chapter['id_truyen'];
+}
+
 // Xử lý cập nhật chapter
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
