@@ -4,6 +4,7 @@ require_once '../../config/connect.php';
 require_once '../../controllers/chapterController.php';
 require_once '../../models/anhChuongModel.php';
 require_once '../../controllers/binhLuanController.php';
+require_once '../../controllers/LichSuDocController.php';
 
 // Kiểm tra tham số id_chuong
 if (!isset($_GET['id_chuong'])) {
@@ -28,6 +29,11 @@ $anh_chuongs = $anhChuongModel->layDanhSachAnh($id_chuong, 'ASC'); // Sắp xế
 
 // Lấy danh sách bình luận của chương
 $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
+
+if (isset($_SESSION['user'])) {
+    $id_nguoidung = $_SESSION['user']['id_nguoidung'];
+    luuLichSuDoc($conn, $id_nguoidung, $id_chuong);
+}
 ?>
 
 <!DOCTYPE html>
