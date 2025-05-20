@@ -192,7 +192,10 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                 <a href="../chapter/docChapter.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="chapter-title">
                                     Chương <?php echo htmlspecialchars($chuong['so_chuong']); ?>: <?php echo htmlspecialchars($chuong['tieu_de']); ?>
                                 </a>
-                                <span class="chapter-meta">Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'] ?? 'now')); ?></span>
+                                <span class="chapter-meta">
+                                    Ngày tạo: <?php echo date('d/m/Y', strtotime($chuong['ngay_tao'] ?? 'now')); ?>
+                                    | 👁️ <?php echo (int)($chuong['luot_xem'] ?? 0); ?> lượt xem
+                                </span>
                             </div>
                             <!-- Các nút chức năng -->
                             <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>

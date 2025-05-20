@@ -33,6 +33,8 @@ $binhLuans = $binhLuanController->layBinhLuanTheoChuong($id_chuong);
 if (isset($_SESSION['user'])) {
     $id_nguoidung = $_SESSION['user']['id_nguoidung'];
     luuLichSuDoc($conn, $id_nguoidung, $id_chuong);
+
+tangLuotXemChuong1Lan1Ngay($conn, $id_nguoidung, $id_chuong);
 }
 ?>
 
