@@ -36,4 +36,38 @@ function xoaLichSuDoc($conn, $id_user, $id_truyen = null) {
     }
     return $stmt->execute();
 }
+
+function tangLuotXemChuong1Lan1Ngay($conn, $id_nguoidung, $id_chuong) {
+    // Kiểm tra đã xem hôm nay chưa
+    $sql = "SELECT * FROM lich_su_doc 
+            WHERE id_nguoidung = ? AND id_chuong = ? 
+            AND DATE(thoi_gian_doc) = CURDATE()";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_nguoidung, $id_chuong);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows == 0) {
+        // Chưa xem hôm nay, tăng lượt xem
+        $sql = "UPDATE chuong SET luot_xem = luot_xem + 1 WHERE id_chuong = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_chuong);
+        $stmt->execute();
+
+        // Lấy id_truyen từ id_chuong
+        $sql = "SELECT id_truyen FROM chuong WHERE id_chuong = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_chuong);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $id_truyen = $row['id_truyen'];
+
+        // Cập nhật tổng lượt xem cho truyện
+        $sql = "UPDATE truyen SET luot_xem = (SELECT SUM(luot_xem) FROM chuong WHERE id_truyen = ?) WHERE id_truyen = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $id_truyen, $id_truyen);
+        $stmt->execute();
+    }
+}
 ?>
