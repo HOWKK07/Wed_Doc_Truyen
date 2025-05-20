@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="content">
         <form action="" method="POST" enctype="multipart/form-data">
-            <h1>Thêm Truyện</h1>
+            <h2>Thêm Truyện Mới</h2>
 
             <!-- Hiển thị lỗi nếu có -->
             <?php if (!empty($error_message)): ?>

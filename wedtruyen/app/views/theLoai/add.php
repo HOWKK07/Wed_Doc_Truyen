@@ -5,6 +5,7 @@ require_once '../../controllers/theLoaiController.php';
 $controller = new TheLoaiController($conn);
 $controller->themTheLoai();
 ?>
+<?php include __DIR__ . '/../shares/header.php'; ?> <!-- Đặt dòng này ngay trước <!DOCTYPE html> -->
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -15,20 +16,18 @@ $controller->themTheLoai();
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/theLoai/add.css">
 </head>
 <body>
-    <!-- Header -->
-    <?php include '../shares/header.php'; ?>
-
     <!-- Nội dung chính -->
     <div class="content">
         <form action="" method="POST">
-            <h1>Thêm Thể Loại</h1>
-            <label for="ten_theloai">Tên Thể Loại:</label>
-            <input type="text" id="ten_theloai" name="ten_theloai" required>
-            <button type="submit">Thêm</button>
+            <h2>Thêm Thể Loại Mới</h2>
+            <label>Tên thể loại:</label>
+            <input type="text" name="ten_theloai" required>
+            <br>
+            <button type="submit">Thêm thể loại</button>
         </form>
     </div>
 
     <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
+    <?php include __DIR__ . '/../shares/footer.php'; ?>
 </body>
 </html>

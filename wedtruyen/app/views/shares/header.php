@@ -12,8 +12,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         
         <?php if (isset($_SESSION['user'])): ?>
             <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php">Thư viện của tôi</a>
-            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/user/lichSuDoc.php">Lịch sử đọc</a>
-            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/add.php">Thêm Truyện</a>
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/lichSuDoc.php">Lịch sử đọc</a>
             
             <?php if (isset($_SESSION['user']['vai_tro']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
                 <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/list.php">Quản Lý Truyện</a>

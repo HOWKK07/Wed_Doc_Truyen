@@ -117,8 +117,8 @@ class TruyenController {
      * @param array $the_loai
      * @param int $nam_phat_hanh
      */
-    public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $the_loai, $nam_phat_hanh) {
-        $this->model->capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh);
+    public function capNhatTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $the_loai, $nam_phat_hanh) {
+        $this->model->capNhatTruyen($ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $the_loai, $nam_phat_hanh);
 
         // Cập nhật thể loại
         $this->model->xoaTheLoaiTruyen($id_truyen);

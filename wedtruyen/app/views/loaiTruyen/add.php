@@ -10,7 +10,7 @@ try {
     echo "<p style='color: red;'>Lỗi: " . htmlspecialchars($e->getMessage()) . "</p>";
 }
 ?>
-
+<?php include '../shares/header.php'; ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -20,8 +20,7 @@ try {
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/loaiTruyen/add.css">
 </head>
 <body>
-    <!-- Header -->
-    <?php include '../shares/header.php'; ?>
+
 
     <!-- Nội dung chính -->
     <div class="content">
@@ -32,8 +31,6 @@ try {
             <button type="submit">Thêm</button>
         </form>
     </div>
-
-    <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
+        <?php include __DIR__ . '/../shares/footer.php'; ?>
 </body>
 </html>
