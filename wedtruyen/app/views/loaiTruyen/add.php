@@ -10,7 +10,7 @@ try {
     echo "<p style='color: red;'>Lỗi: " . htmlspecialchars($e->getMessage()) . "</p>";
 }
 ?>
-<?php include '../shares/header.php'; ?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -29,8 +29,9 @@ try {
             <label for="ten_loai_truyen">Tên Loại Truyện:</label>
             <input type="text" id="ten_loai_truyen" name="ten_loai_truyen" required>
             <button type="submit">Thêm</button>
+           <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php" class="btn-cancel">Hủy</a>
         </form>
     </div>
-        <?php include __DIR__ . '/../shares/footer.php'; ?>
+
 </body>
 </html>
