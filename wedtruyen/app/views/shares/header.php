@@ -7,6 +7,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <a href="/Wed_Doc_Truyen/wedtruyen/index.php" class="logo">Web Đọc Truyện</a>
     
     <div class="nav-links">
+        <!-- Ô tìm kiếm truyện -->
+        <div style="position:relative;display:inline-block;">
+            <input type="text" id="search-truyen" placeholder="Tìm truyện..." autocomplete="off" style="padding:6px 12px;border-radius:4px;border:1px solid #ccc;width:180px;">
+            <div id="search-results" style="display:none;position:absolute;top:36px;left:0;width:100%;background:#fff;border:1px solid #ddd;max-height:300px;overflow-y:auto;z-index:10000;border-radius:0 0 6px 6px;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
  
         
         <?php if (isset($_SESSION['user'])): ?>
@@ -90,8 +95,57 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
     });
 
-    document.addEventListener('click', function() {
-        dropdown.style.display = 'none';
+    // Tìm kiếm truyện
+    const searchInput = document.getElementById('search-truyen');
+    const searchResults = document.getElementById('search-results');
+    let searchTimeout = null;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(searchTimeout);
+        if (query.length === 0) {
+            searchResults.style.display = 'none';
+            searchResults.innerHTML = '';
+            return;
+        }
+        searchTimeout = setTimeout(() => {
+            fetch(`/Wed_Doc_Truyen/wedtruyen/app/api/searchTruyen.php?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        searchResults.innerHTML = data.map(truyen => {
+    // Xử lý đường dẫn ảnh bìa
+    let cover = truyen.anh_bia && truyen.anh_bia !== 'null' && truyen.anh_bia !== '' 
+        ? `/Wed_Doc_Truyen/wedtruyen/${truyen.anh_bia}` 
+        : `/Wed_Doc_Truyen/wedtruyen/assets/img/default_cover.jpg`;
+    return `
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=${truyen.id_truyen}" class="search-item" style="display:flex;align-items:center;padding:10px 16px;text-decoration:none;color:#222;border-bottom:1px solid #f0f0f0;">
+            <img src="${cover}" alt="cover" style="width:38px;height:52px;object-fit:cover;border-radius:4px;margin-right:12px;">
+            <div>
+                <div style="font-weight:bold;">${truyen.ten_truyen}</div>
+                <div style="font-size:13px;color:#888;">${truyen.tac_gia ? 'Tác giả: ' + truyen.tac_gia : ''}</div>
+                <div style="font-size:12px;color:#888;">${truyen.trang_thai ? 'Trạng thái: ' + truyen.trang_thai : ''}</div>
+            </div>
+        </a>
+    `;
+}).join('');
+                        searchResults.style.display = 'block';
+                    } else {
+                        searchResults.innerHTML = '<div style="padding:10px;color:#888;">Không tìm thấy truyện.</div>';
+                        searchResults.style.display = 'block';
+                    }
+                });
+        }, 250);
+    });
+
+    // Ẩn kết quả khi click ngoài
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+    searchInput.addEventListener('focus', function() {
+        if (searchResults.innerHTML.trim() !== '') searchResults.style.display = 'block';
     });
 });
 </script>
@@ -103,5 +157,17 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 #notification-dropdown {
     z-index: 9999 !important;
+}
+#search-results {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    z-index: 9999;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.search-item:hover {
+    background: #f6f6f6;
 }
 </style>
