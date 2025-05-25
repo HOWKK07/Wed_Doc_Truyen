@@ -1,6 +1,18 @@
 <?php
 session_start();
 require_once 'app/config/connect.php';
+
+// Lấy 10 truyện mới nhất cho slider
+$sqlSlider = "SELECT id_truyen, ten_truyen, anh_bia FROM truyen ORDER BY id_truyen DESC LIMIT 10";
+$sliderTruyen = $conn->query($sqlSlider);
+
+// Lấy truyện mới nhất cho banner lớn
+$sqlBanner = "SELECT id_truyen, ten_truyen, anh_bia, mo_ta FROM truyen ORDER BY id_truyen DESC LIMIT 1";
+$bannerTruyen = $conn->query($sqlBanner)->fetch_assoc();
+
+// Lấy danh sách banner truyện nổi bật (slider tự động)
+$sqlBannerList = "SELECT id_truyen, ten_truyen, anh_bia, mo_ta FROM truyen WHERE trang_thai = 'Nổi bật' ORDER BY id_truyen DESC LIMIT 5";
+$bannerTruyenList = $conn->query($sqlBannerList);
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +33,52 @@ require_once 'app/config/connect.php';
             <p class="success-message">Thêm truyện thành công!</p>
         <?php endif; ?>
 
-   
+        <!-- Slider truyện mới thêm -->
+        <div class="truyen-slider-row">
+            <div class="slider-wrapper">
+                <?php if ($sliderTruyen && $sliderTruyen->num_rows > 0): ?>
+                    <?php while($row = $sliderTruyen->fetch_assoc()): ?>
+                        <div class="slider-item">
+                            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=<?= (int)$row['id_truyen'] ?>">
+                                <img src="/Wed_Doc_Truyen/<?= $row['anh_bia'] ?: 'assets/images/default-cover.jpg' ?>" alt="<?= htmlspecialchars($row['ten_truyen']) ?>">
+                                <div class="slider-title"><?= htmlspecialchars($row['ten_truyen']) ?></div>
+                            </a>
+                        </div>
+                    <?php endwhile; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Banner truyện mới nhất -->
+        <?php if ($bannerTruyen): ?>
+        <div class="banner-truyen">
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=<?= (int)$bannerTruyen['id_truyen'] ?>">
+                <img class="banner-img" src="/Wed_Doc_Truyen/<?= $bannerTruyen['anh_bia'] ?: 'assets/images/default-cover.jpg' ?>" alt="<?= htmlspecialchars($bannerTruyen['ten_truyen']) ?>">
+                <div class="banner-info">
+                    <h2><?= htmlspecialchars($bannerTruyen['ten_truyen']) ?></h2>
+                    <p><?= htmlspecialchars(mb_strimwidth($bannerTruyen['mo_ta'], 0, 120, "...")) ?></p>
+                </div>
+            </a>
+        </div>
+        <?php endif; ?>
+
+        <!-- Banner truyện mới nổi bật (slider tự động) -->
+        <?php if ($bannerTruyenList && $bannerTruyenList->num_rows > 0): ?>
+        <div class="banner-truyen-slider">
+            <?php $i = 0; foreach ($bannerTruyenList as $banner): ?>
+            <div class="banner-truyen-slide<?= $i === 0 ? ' active' : '' ?>">
+                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=<?= (int)$banner['id_truyen'] ?>">
+                    <img class="banner-img" src="/Wed_Doc_Truyen/<?= $banner['anh_bia'] ?: 'assets/images/default-cover.jpg' ?>" alt="<?= htmlspecialchars($banner['ten_truyen']) ?>">
+                    <div class="banner-info">
+                        <h2><?= htmlspecialchars($banner['ten_truyen']) ?></h2>
+                        <p><?= htmlspecialchars(mb_strimwidth($banner['mo_ta'], 0, 120, "...")) ?></p>
+                    </div>
+                </a>
+            </div>
+            <?php $i++; endforeach; ?>
+        </div>
+        <?php endif; ?>
+
         <div class="truyen-list">
             <?php
             $q = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -81,5 +138,19 @@ require_once 'app/config/connect.php';
     </div>
     <!-- Footer -->
     <?php include 'app/views/shares/footer.php'; ?>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.banner-truyen-slide');
+        let current = 0;
+        if (slides.length > 1) {
+            setInterval(() => {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }, 3000);
+        }
+    });
+    </script>
 </body>
 </html>

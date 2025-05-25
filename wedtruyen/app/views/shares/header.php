@@ -40,8 +40,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <div id="notification-list" style="padding:10px 0;"></div>
             </div>
         </div>
+        <!-- Dropdown tài khoản -->
+        <div class="account-dropdown-wrapper" style="display:inline-block;position:relative;">
+            <button id="account-btn" style="background:none;border:none;cursor:pointer;position:relative;margin-left:10px;">
+                <i class="fas fa-user-circle" style="font-size:26px;color:#fff;"></i>
+                <span style="vertical-align:middle;">&#9660;</span>
+            </button>
+            <div id="account-dropdown" style="display:none;position:absolute;right:0;top:36px;width:180px;background:#23272f;color:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:1000;">
+                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/edit.php?id=<?php echo $_SESSION['user']['id_nguoidung']; ?>" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                    <i class="fas fa-user" style="margin-right:10px;"></i> Thông tin tài khoản
+                </a>
+                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                    <i class="fas fa-history" style="margin-right:10px;"></i> Lịch sử
+                </a>
+                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/logout.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                    <i class="fas fa-power-off" style="margin-right:10px;"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
             <span>Xin chào, <?php echo htmlspecialchars($_SESSION['user']['ten_dang_nhap']); ?>!</span>
-            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/logout.php" class="logout-btn">Đăng xuất</a>
         <?php else: ?>
             <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/login.php" class="login-btn">Đăng nhập</a>
         <?php endif; ?>
@@ -114,9 +131,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0) {
                         searchResults.innerHTML = data.map(truyen => {
-    // Xử lý đường dẫn ảnh bìa
-    let cover = truyen.anh_bia && truyen.anh_bia !== 'null' && truyen.anh_bia !== '' 
-        ? `/Wed_Doc_Truyen/wedtruyen/${truyen.anh_bia}` 
+    let cover = truyen.anh_bia && truyen.anh_bia !== 'null' && truyen.anh_bia !== ''
+        ? `/Wed_Doc_Truyen/${truyen.anh_bia.replace(/^\/+/, '')}`
         : `/Wed_Doc_Truyen/wedtruyen/assets/img/default_cover.jpg`;
     return `
         <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=${truyen.id_truyen}" class="search-item" style="display:flex;align-items:center;padding:10px 16px;text-decoration:none;color:#222;border-bottom:1px solid #f0f0f0;">
@@ -147,6 +163,21 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('focus', function() {
         if (searchResults.innerHTML.trim() !== '') searchResults.style.display = 'block';
     });
+
+    // Dropdown tài khoản
+    const accountBtn = document.getElementById('account-btn');
+    const accountDropdown = document.getElementById('account-dropdown');
+    if (accountBtn && accountDropdown) {
+        accountBtn.addEventListener('click', function(e) {
+            accountDropdown.style.display = accountDropdown.style.display === 'block' ? 'none' : 'block';
+            e.stopPropagation();
+        });
+        document.addEventListener('click', function(e) {
+            if (!accountDropdown.contains(e.target) && e.target !== accountBtn) {
+                accountDropdown.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
 <style>

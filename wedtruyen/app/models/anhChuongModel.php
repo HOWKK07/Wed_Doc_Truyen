@@ -16,8 +16,8 @@ class AnhChuongModel {
     }
 
     // Lấy danh sách ảnh theo ID chương
-    public function layDanhSachAnh($id_chuong, $order = 'ASC') {
-        $sql = "SELECT * FROM anh_chuong WHERE id_chuong = ? ORDER BY so_trang $order";
+    public function layDanhSachAnh($id_chuong) {
+        $sql = "SELECT * FROM anh_chuong WHERE id_chuong = ? ORDER BY so_trang ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id_chuong);
         $stmt->execute();

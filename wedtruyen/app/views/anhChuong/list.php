@@ -131,23 +131,48 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
 
         <!-- Nút thêm trang và lưu thứ tự -->
         <a href="add.php?id_chuong=<?php echo $id_chuong; ?>&so_trang_bat_dau=<?php echo $so_trang_moi; ?>" class="add-page-btn">+ Thêm Trang</a>
-        <button id="save-order">Lưu Thứ Tự</button>
+        <button id="save-order">Lưu thứ tự</button>
 
         <!-- Hiển thị danh sách trang -->
         <h1>Danh Sách Trang</h1>
         <div class="page-list" id="page-list">
-            <?php foreach ($anh_list as $anh): 
-                if (!is_array($anh)) continue;
-                $id_anh = isset($anh['id_anh']) ? (int)$anh['id_anh'] : 0; // Sửa lỗi gán giá trị
-                $so_trang = isset($anh['so_trang']) ? (int)$anh['so_trang'] : 0;
-                $duong_dan_anh = isset($anh['duong_dan_anh']) ? (string)$anh['duong_dan_anh'] : ''; // Sửa lỗi gán giá trị
+            <?php
+            // Lấy dữ liệu audio_trang cho tất cả id_anh của chương này
+            $audio_map = [];
+            if (!empty($anh_list)) {
+                $ids = array_column($anh_list, 'id_anh');
+                $ids_str = implode(',', array_map('intval', $ids));
+                $sql_audio = "SELECT * FROM audio_trang WHERE id_anh IN ($ids_str)";
+                $result_audio = $conn->query($sql_audio);
+                if ($result_audio) {
+                    while ($row = $result_audio->fetch_assoc()) {
+                        $audio_map[$row['id_anh']] = $row;
+                    }
+                }
+            }
             ?>
-                <div class="page-item" draggable="true" data-id="<?php echo $id_anh; ?>" data-so-trang="<?php echo $so_trang; ?>">
-                    <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($duong_dan_anh); ?>" alt="Trang <?php echo $so_trang; ?>">
-                    <p>Trang: <?php echo $so_trang; ?></p>
+
+            <?php foreach ($anh_list as $anh): 
+                $audio = isset($audio_map[$anh['id_anh']]) ? $audio_map[$anh['id_anh']] : [];
+            ?>
+                <div class="page-item" data-id="<?php echo $anh['id_anh']; ?>" draggable="true">
+                    <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" alt="Trang <?php echo $anh['so_trang']; ?>">
+                    <p>Trang: <?php echo $anh['so_trang']; ?></p>
                     <div class="actions">
-                        <a href="edit.php?id_anh=<?php echo $id_anh; ?>" class="edit-btn">Sửa</a>
-                        <a href="delete.php?id_anh=<?php echo $id_anh; ?>&id_chuong=<?php echo $id_chuong; ?>" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa trang này?');">Xóa</a>
+                        <!-- Thêm/Sửa audio -->
+                        <?php if (!empty($audio['duong_dan_audio'])): ?>
+                            <audio controls src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($audio['duong_dan_audio']); ?>" style="width:120px;"></audio>
+                        <?php else: ?>
+                            <form action="upload_audio_trang.php?id_chuong=<?php echo $id_chuong; ?>" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="id_anh" value="<?php echo $anh['id_anh']; ?>">
+                                <input type="file" name="audio_file" required>
+                                <button type="submit">Tải lên audio</button>
+                            </form>
+                        <?php endif; ?>
+                        <!-- Xem sub -->
+                        <?php if (!empty($audio['duong_dan_sub'])): ?>
+                            <a href="/Wed_Doc_Truyen/<?php echo htmlspecialchars($audio['duong_dan_sub']); ?>" target="_blank">Xem sub</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -167,36 +192,25 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
 
     <script>
         const pageList = document.getElementById('page-list');
-        let draggingItem;
-        let autoScrollInterval;
+        let draggingItem = null;
 
         pageList.addEventListener('dragstart', (e) => {
             draggingItem = e.target;
-            draggingItem.classList.add('dragging');
-        });
-
-        pageList.addEventListener('dragend', (e) => {
-            draggingItem.classList.remove('dragging');
-            draggingItem = null;
-            clearInterval(autoScrollInterval);
+            e.dataTransfer.effectAllowed = 'move';
         });
 
         pageList.addEventListener('dragover', (e) => {
             e.preventDefault();
-
             const afterElement = getDragAfterElement(pageList, e.clientY);
             if (afterElement == null) {
                 pageList.appendChild(draggingItem);
             } else {
                 pageList.insertBefore(draggingItem, afterElement);
             }
-
-            handleAutoScroll(e.clientY);
         });
 
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.page-item:not(.dragging)')];
-
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
                 const offset = y - box.top - box.height / 2;
@@ -208,66 +222,41 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        function handleAutoScroll(mouseY) {
-            const scrollMargin = 50;
-            const scrollSpeed = 10;
-
-            clearInterval(autoScrollInterval);
-
-            if (mouseY < scrollMargin) {
-                autoScrollInterval = setInterval(() => {
-                    window.scrollBy(0, -scrollSpeed);
-                }, 20);
-            } else if (mouseY > window.innerHeight - scrollMargin) {
-                autoScrollInterval = setInterval(() => {
-                    window.scrollBy(0, scrollSpeed);
-                }, 20);
-            }
-        }
+        pageList.addEventListener('dragend', () => {
+            draggingItem = null;
+        });
 
         // Lưu thứ tự mới
         document.getElementById('save-order').addEventListener('click', () => {
             const order = [];
-            const originalOrder = [];
-            const currentOrder = [];
-
             document.querySelectorAll('.page-item').forEach((item, index) => {
                 const id = item.getAttribute('data-id');
-                originalOrder.push({ id: id, so_trang: item.getAttribute('data-so-trang') });
-                currentOrder.push({ id: id, so_trang: index + 1 });
+                order.push({ id: id, so_trang: index + 1 });
             });
-
-            currentOrder.forEach((item, index) => {
-                if (item.so_trang != originalOrder[index].so_trang) {
-                    order.push(item);
-                }
-            });
-
-            if (order.length === 0) {
-                alert('Không có thay đổi nào để lưu.');
-                return;
-            }
 
             fetch('updateOrder.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(order)
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Thứ tự đã được cập nhật!');
-                        location.reload();
-                    } else {
-                        alert('Có lỗi xảy ra khi cập nhật thứ tự.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Lỗi:', error);
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cập nhật lại số trang hiển thị trên giao diện
+                    document.querySelectorAll('.page-item').forEach((item, index) => {
+                        const p = item.querySelector('p');
+                        if (p) p.textContent = 'Trang: ' + (index + 1);
+                    });
+                    alert('Thứ tự đã được cập nhật!');
+                    // location.reload(); // Không cần reload nếu chỉ muốn cập nhật số trang
+                } else {
                     alert('Có lỗi xảy ra khi cập nhật thứ tự.');
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                alert('Có lỗi xảy ra khi cập nhật thứ tự.');
+            });
         });
     </script>
 </body>
