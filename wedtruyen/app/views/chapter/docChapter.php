@@ -58,92 +58,100 @@ if (isset($_SESSION['user'])) {
         $stmt->execute();
     }
 }
+
+
+
+// Lấy danh sách audio/phụ đề cho từng trang
+$audio_trang_map = [];
+$sql = "SELECT id_anh, duong_dan_audio, duong_dan_sub FROM audio_trang WHERE id_anh IN (SELECT id_anh FROM anh_chuong WHERE id_chuong = ?)";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_chuong);
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $audio_trang_map[(int)$row['id_anh']] = [
+        'audio' => $row['duong_dan_audio'],
+        'sub'   => $row['duong_dan_sub']
+    ];
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
+        <style>
+        .subtitle-line > div:first-child {
+            color: #111 !important;
+        }
+    </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($chuong['tieu_de']); ?></title>
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/chapter/docChapter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div id="reader-container">
         <!-- Reading progress bar -->
         <div class="reading-progress" id="reading-progress"></div>
 
-        <!-- Header with controls -->
+        <!-- Header -->
         <header class="reader-header" id="reader-header">
             <div class="header-content">
-                <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-to-comic" title="Quay lại truyện">
+                <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $chuong['id_truyen']; ?>" class="back-to-comic">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
                 <div class="chapter-title">
-                    <span>
-                        <!-- Dòng hiển thị tên truyện -->
-                        <?= htmlspecialchars($chuong['ten_truyen'] ?? '') ?> - 
-                        <!-- Dòng hiển thị tiêu đề chương -->
-                        <?= htmlspecialchars($chuong['tieu_de'] ?? '') ?> 
-                        <!-- Dòng hiển thị số chương -->
-                        (Chương <?= htmlspecialchars($chuong['so_chuong'] ?? '') ?>)
-                    </span>
+                    <?= htmlspecialchars($chuong['ten_truyen'] ?? '') ?> - 
+                    <?= htmlspecialchars($chuong['tieu_de'] ?? '') ?> 
+                    (Chương <?= htmlspecialchars($chuong['so_chuong'] ?? '') ?>)
                 </div>
-                <button class="control-btn" id="fullscreen-btn" title="Toàn màn hình">
+                <button class="control-btn" id="fullscreen-btn">
                     <i class="fas fa-expand"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Chapter container -->
+        <!-- Main content -->
         <div id="chapter-container">
-            <!-- Main viewer area -->
-            <div id="viewer-area">
-                <?php while ($anh = $anh_chuongs->fetch_assoc()): ?>
-                    <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>" 
-                         alt="Trang <?php echo $anh['so_trang']; ?>" 
-                         class="page-viewer" 
-                         data-page="<?php echo $anh['so_trang']; ?>">
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Comments section -->
-            <div class="comments-container">
-                <h2 class="comments-title">Bình luận</h2>
-                
-                <div class="comment-list">
-                    <?php if ($binhLuans->num_rows > 0): ?>
-                        <?php while ($comment = $binhLuans->fetch_assoc()): ?>
-                            <div class="comment-item">
-                                <div class="comment-header">
-                                    <span class="comment-user"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></span>
-                                    <span class="comment-date"><?php echo date('d/m/Y H:i', strtotime($comment['ngay_binh_luan'])); ?></span>
-                                </div>
-                                <div class="comment-content">
-                                    <?php echo htmlspecialchars($comment['noi_dung']); ?>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p>Chưa có bình luận nào.</p>
-                    <?php endif; ?>
+            <div class="chapter-content-wrapper">
+                <div id="viewer-area">
+                    <?php
+                    $anh_chuongs2 = $anhChuongModel->layDanhSachAnh($id_chuong, 'ASC');
+                    while ($anh = $anh_chuongs2->fetch_assoc()): ?>
+                        <img src="/Wed_Doc_Truyen/<?php echo htmlspecialchars($anh['duong_dan_anh']); ?>"
+                             class="page-viewer"
+                             data-id-anh="<?php echo $anh['id_anh']; ?>"
+                             data-page="<?php echo $anh['so_trang']; ?>">
+                    <?php endwhile; ?>
                 </div>
-
-                <?php if (isset($_SESSION['user'])): ?>
-                    <form action="../binhLuan/addChapterComment.php" method="POST" class="comment-form">
-                        <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
-                        <textarea name="noi_dung" class="comment-textarea" placeholder="Viết bình luận của bạn..." required></textarea>
-                        <button type="submit" class="comment-submit">Gửi bình luận</button>
-                    </form>
-                <?php else: ?>
-                    <div class="login-prompt">
-                        <p>Vui lòng <a href="../taiKhoan/login.php" class="login-link">đăng nhập</a> để bình luận.</p>
+                <div class="media-controls" style="
+                    flex: 0 0 350px;
+                    min-width: 320px;
+                    max-width: 400px;
+                    position: fixed;
+                    right: 0;
+                    top: 80px;
+                    z-index: 100;
+                    background: rgba(26,26,26,0.97);
+                    border-radius: 12px 0 0 12px;
+                    box-shadow: -2px 4px 16px rgba(0,0,0,0.12);
+                    padding: 18px 18px 18px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: stretch;
+                ">
+                    <div id="audio-loading" style="display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang tải audio...
                     </div>
-                <?php endif; ?>
+                    <button id="play-audio-btn" class="audio-control" style="padding:8px 20px; margin-bottom: 12px;">Phát audio</button>
+                    <audio id="audio-player" controls style="width:100%;display:none;margin-bottom:12px"></audio>
+                    <div id="subtitle-list-box" style="background:#f9f9f9;border-radius:8px;padding:12px;min-height:200px;max-height:400px;overflow-y:auto;max-width:350px;display:none"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Page navigation -->
+        <!-- Navigation and comments -->
         <div class="page-navigation" id="page-navigation">
             <button class="nav-btn" id="prev-page" title="Trang trước">
                 <i class="fas fa-chevron-left"></i>
@@ -156,8 +164,6 @@ if (isset($_SESSION['user'])) {
             </button>
         </div>
 
-
-        <!-- Chapter navigation -->
         <div class="chapter-navigation">
             <?php if (!empty($chuong['id_chuong_truoc'])): ?>
                 <a href="docChapter.php?id_chuong=<?php echo $chuong['id_chuong_truoc']; ?>" class="nav-btn">Chương trước</a>
@@ -169,10 +175,40 @@ if (isset($_SESSION['user'])) {
                 <a href="docChapter.php?id_chuong=<?php echo $chuong['id_chuong_sau']; ?>" class="nav-btn">Chương sau</a>
             <?php endif; ?>
         </div>
-    </div>
 
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <!-- Comments section (moved to bottom) -->
+        <div class="comments-container">
+            <h2 class="comments-title">Bình luận</h2>
+            <div class="comment-list">
+                <?php if ($binhLuans->num_rows > 0): ?>
+                    <?php while ($comment = $binhLuans->fetch_assoc()): ?>
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <span class="comment-user"><?php echo htmlspecialchars($comment['ten_dang_nhap']); ?></span>
+                                <span class="comment-date"><?php echo date('d/m/Y H:i', strtotime($comment['ngay_binh_luan'])); ?></span>
+                            </div>
+                            <div class="comment-content">
+                                <?php echo htmlspecialchars($comment['noi_dung']); ?>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>Chưa có bình luận nào.</p>
+                <?php endif; ?>
+            </div>
+            <?php if (isset($_SESSION['user'])): ?>
+                <form action="../binhLuan/addChapterComment.php" method="POST" class="comment-form">
+                    <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
+                    <textarea name="noi_dung" class="comment-textarea" placeholder="Viết bình luận của bạn..." required></textarea>
+                    <button type="submit" class="comment-submit">Gửi bình luận</button>
+                </form>
+            <?php else: ?>
+                <div class="login-prompt">
+                    <p>Vui lòng <a href="../taiKhoan/login.php" class="login-link">đăng nhập</a> để bình luận.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -194,15 +230,12 @@ if (isset($_SESSION['user'])) {
                 currentPageEl.textContent = index + 1;
                 currentPage = index;
 
-                // Cập nhật trạng thái của các ô số trang
-                const pageNumbers = document.querySelectorAll('.page-number');
-                pageNumbers.forEach((pageNumber, i) => {
-                    pageNumber.classList.toggle('active', i === index);
-                });
+                // Không cần cập nhật main-content nữa
+                // document.getElementById('main-content').innerHTML = ...;
 
-                // Vô hiệu hóa nút nếu ở trang đầu hoặc cuối
-                prevBtn.disabled = index === 0;
-                nextBtn.disabled = index === pages.length - 1;
+                // Cập nhật audio/sub cho trang ảnh
+                loadAudioAndSub(index);
+                // ...các xử lý khác giữ nguyên...
             }
 
             // Hiển thị trang đầu tiên
@@ -223,6 +256,7 @@ if (isset($_SESSION['user'])) {
                     showPage(currentPage);
                 }
             }
+            window.nextPage = nextPage; // <-- Thêm dòng này
 
             // Chuyển đến trang cụ thể
             function goToPage(index) {
@@ -314,5 +348,158 @@ if (isset($_SESSION['user'])) {
 
         });
     </script>
+
+    <script>
+const audioData = <?php echo json_encode($audio_trang_map, JSON_UNESCAPED_UNICODE); ?>;
+const audioPlayer = document.getElementById('audio-player');
+const playBtn = document.getElementById('play-audio-btn');
+const subtitleListBox = document.getElementById('subtitle-list-box');
+let cues = [];
+let currentCueIndex = -1;
+let currentPage = 0;
+
+// Parse VTT thành cues
+function parseVTT(vtt) {
+    const lines = vtt.split('\n');
+    let cues = [];
+    let cue = {};
+    for (let line of lines) {
+        if (line.includes('-->')) {
+            const [start, end] = line.split('-->').map(s => s.trim());
+            cue = { start: toSeconds(start), end: toSeconds(end), text: '' };
+        } else if (line.trim() && cue.start !== undefined) {
+            cue.text += line.trim() + ' ';
+        } else if (!line.trim() && cue.text) {
+            cues.push({ ...cue });
+            cue = {};
+        }
+    }
+    if (cue.text) cues.push(cue);
+    return cues;
+}
+function toSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':').map(Number);
+    return h * 3600 + m * 60 + s;
+}
+
+// Hiển thị danh sách phụ đề
+function renderSubtitleList() {
+    if (!cues.length) {
+        subtitleListBox.innerHTML = '';
+        subtitleListBox.style.display = 'none';
+        return;
+    }
+    subtitleListBox.style.display = '';
+    subtitleListBox.innerHTML = cues.map((cue, idx) => `
+        <div class="subtitle-line" data-idx="${idx}" style="padding:6px 0;cursor:pointer;">
+            <div style="font-size:14px;">${cue.text}</div>
+            <div style="font-size:12px;color:#888;">${formatTime(cue.start)} - ${formatTime(cue.end)}</div>
+        </div>
+    `).join('');
+    // Click vào dòng phụ đề để tua audio
+    subtitleListBox.querySelectorAll('.subtitle-line').forEach(line => {
+        line.onclick = function() {
+            const idx = +this.getAttribute('data-idx');
+            if (cues[idx]) {
+                audioPlayer.currentTime = cues[idx].start + 0.01;
+                audioPlayer.play();
+            }
+        }
+    });
+}
+function formatTime(sec) {
+    sec = Math.floor(sec);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// Load audio và sub cho từng trang
+function loadAudioAndSub(pageIdx) {
+    const img = document.querySelectorAll('.page-viewer')[pageIdx];
+    const id_anh = img ? img.getAttribute('data-id-anh') : null;
+    const data = audioData[id_anh];
+    if (data && data.audio) {
+        audioPlayer.src = "/Wed_Doc_Truyen/" + data.audio;
+        audioPlayer.style.display = '';
+        playBtn.style.display = '';
+        if (data.sub) {
+            fetch("/Wed_Doc_Truyen/" + data.sub)
+                .then(res => res.text())
+                .then(vtt => {
+                    cues = parseVTT(vtt);
+                    currentCueIndex = -1;
+                    renderSubtitleList();
+                });
+        } else {
+            cues = [];
+            subtitleListBox.style.display = 'none';
+        }
+    } else {
+        audioPlayer.src = '';
+        audioPlayer.style.display = 'none';
+        playBtn.style.display = 'none';
+        cues = [];
+        subtitleListBox.style.display = 'none';
+    }
+}
+
+// Highlight dòng phụ đề đang phát
+audioPlayer.addEventListener('timeupdate', () => {
+    if (!cues.length) return;
+    const t = audioPlayer.currentTime;
+    let found = -1;
+    for (let i = 0; i < cues.length; i++) {
+        if (t >= cues[i].start && t <= cues[i].end) {
+            found = i;
+            break;
+        }
+    }
+    if (found !== currentCueIndex) {
+        // Bỏ highlight cũ
+        if (currentCueIndex >= 0) {
+            const oldLine = subtitleListBox.querySelector(`.subtitle-line[data-idx="${currentCueIndex}"]`);
+            if (oldLine) oldLine.style.background = '';
+        }
+        // Highlight mới
+        if (found >= 0) {
+            const newLine = subtitleListBox.querySelector(`.subtitle-line[data-idx="${found}"]`);
+            if (newLine) {
+                newLine.style.background = '#ffe9b3';
+                // Scroll vào giữa box nếu bị khuất
+                newLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }
+        }
+        currentCueIndex = found;
+    }
+});
+
+// Nút play audio
+playBtn.addEventListener('click', () => {
+    audioPlayer.currentTime = 0;
+    audioPlayer.play();
+});
+
+// Khi chuyển trang, gọi lại loadAudioAndSub
+function showPage(idx) {
+    currentPage = idx;
+    loadAudioAndSub(idx);
+}
+loadAudioAndSub(0); // Trang đầu tiên
+
+// Tự động chuyển trang khi audio phát hết
+audioPlayer.addEventListener('ended', function () {
+    if (typeof nextPage === 'function') {
+        nextPage();
+        setTimeout(() => {
+            if (audioPlayer.src && audioPlayer.style.display !== 'none') {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+            }
+        }, 300);
+    }
+});
+    </script>
+    
 </body>
 </html>

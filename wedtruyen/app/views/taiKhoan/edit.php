@@ -15,6 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $vai_tro = $_POST['vai_tro'];
 
+    // Nếu đang là admin và muốn chuyển thành người dùng, kiểm tra số lượng admin
+    if ($user['vai_tro'] === 'admin' && $vai_tro !== 'admin') {
+        $sql = "SELECT COUNT(*) as total FROM nguoidung WHERE vai_tro = 'admin'";
+        $result = $conn->query($sql);
+        $row = $result->fetch_assoc();
+        if ($row['total'] <= 1) {
+            echo "Không thể thay đổi vai trò vì đây là tài khoản admin duy nhất.";
+            exit();
+        }
+    }
+
     // Cập nhật thông tin tài khoản
     $sql = "UPDATE nguoidung SET ten_dang_nhap = ?, email = ?, vai_tro = ? WHERE id_nguoidung = ?";
     $stmt = $conn->prepare($sql);
@@ -38,8 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/taiKhoan/edit.css">
 </head>
 <body>
-    <!-- Header -->
-    <?php include '../shares/header.php'; ?>
 
     <!-- Nội dung chính -->
     <div class="content">
@@ -60,8 +69,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Cập Nhật</button>
         </form>
     </div>
-
-    <!-- Footer -->
-    <?php include '../shares/footer.php'; ?>
 </body>
 </html>

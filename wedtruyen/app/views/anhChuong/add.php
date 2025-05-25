@@ -25,13 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Ảnh Chương</title>
+    <title>Thêm Trang Chữ Cho Chương</title>
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/anhChuong/add.css">
 </head>
 <body>
@@ -41,13 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Nội dung chính -->
     <div class="content">
         <form action="" method="POST" enctype="multipart/form-data">
-            <h1>Thêm Ảnh Chương</h1>
+            <h1>Thêm Nhiều Trang Ảnh Cho Chương</h1>
             <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
-            <label for="so_trang_bat_dau">Số trang bắt đầu:</label>
-            <input type="number" id="so_trang_bat_dau" name="so_trang_bat_dau" value="<?php echo $so_trang_bat_dau; ?>" readonly>
-            <label for="anh">Chọn ảnh (có thể chọn nhiều ảnh):</label>
+            <label for="anh">Chọn nhiều ảnh:</label>
             <input type="file" id="anh" name="anh[]" accept="image/*" multiple required>
-            <button type="submit">Thêm Ảnh</button>
+            <button type="submit">Thêm Trang</button>
         </form>
     </div>
 
