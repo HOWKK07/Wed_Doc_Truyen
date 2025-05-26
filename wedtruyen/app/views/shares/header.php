@@ -26,6 +26,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php">Loại Truyện</a>
             <?php endif; ?>
         <?php endif; ?>
+        <?php if (isset($_SESSION['user']['vai_tro']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
+    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/admin/admin.php">Admin Panel</a>
+<?php endif; ?>
     </div>
 
     <div class="user-info">
