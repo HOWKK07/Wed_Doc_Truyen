@@ -1,6 +1,11 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/connect.php';
+require_once '../../controllers/truyenController.php';
+require_once '../../helpers/utils.php';
+require_once '../../controllers/theLoaiController.php';
+require_once '../../controllers/loaiTruyenController.php';
+
 
 // Kiểm tra quyền admin
 if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
