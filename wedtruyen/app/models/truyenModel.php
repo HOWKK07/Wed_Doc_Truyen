@@ -49,15 +49,9 @@ class TruyenModel {
      * @param int $nam_phat_hanh
      */
     public function capNhatTruyen($id_truyen, $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh) {
-        $sql = "UPDATE truyen SET ten_truyen = ?, tac_gia = ?, id_loai_truyen = ?, anh_bia = ?, mo_ta = ?, trang_thai = ?, nam_phat_hanh = ? WHERE id_truyen = ?";
+        $sql = "UPDATE truyen SET ten_truyen=?, tac_gia=?, id_loai_truyen=?, anh_bia=?, mo_ta=?, trang_thai=?, nam_phat_hanh=? WHERE id_truyen=?";
         $stmt = $this->conn->prepare($sql);
-
-        if (!$stmt) {
-            throw new Exception("Lỗi chuẩn bị truy vấn: " . $this->conn->error);
-        }
-
         $stmt->bind_param("ssisssii", $ten_truyen, $tac_gia, $id_loai_truyen, $anh_bia, $mo_ta, $trang_thai, $nam_phat_hanh, $id_truyen);
-
         if (!$stmt->execute()) {
             throw new Exception("Không thể cập nhật truyện: " . $stmt->error);
         }
