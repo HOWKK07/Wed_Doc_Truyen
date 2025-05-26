@@ -125,7 +125,8 @@ while ($row = $result->fetch_assoc()) {
                              data-page="<?php echo $anh['so_trang']; ?>">
                     <?php endwhile; ?>
                 </div>
-                <div class="media-controls" style="
+        </div>
+        <div class="media-controls" style="
                     flex: 0 0 350px;
                     min-width: 320px;
                     max-width: 400px;
@@ -148,8 +149,6 @@ while ($row = $result->fetch_assoc()) {
                     <audio id="audio-player" controls style="width:100%;display:none;margin-bottom:12px"></audio>
                     <div id="subtitle-list-box" style="background:#f9f9f9;border-radius:8px;padding:12px;min-height:200px;max-height:400px;overflow-y:auto;max-width:350px;display:none"></div>
                 </div>
-            </div>
-        </div>
 
         <!-- Navigation and comments -->
         <div class="page-navigation" id="page-navigation">
@@ -294,23 +293,32 @@ while ($row = $result->fetch_assoc()) {
             });
 
             // Kích hoạt chế độ toàn màn hình
-            function toggleFullscreen() {
-                if (!document.fullscreenElement) {
-                    viewerArea.requestFullscreen().catch(err => {
-                        console.error(`Lỗi khi vào chế độ toàn màn hình: ${err.message}`);
-                    });
-                    document.body.classList.add('fullscreen-mode');
-                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    // Hiển thị thanh điều hướng khi vào fullscreen
-                    showNavigationBar();
-                } else {
-                    document.exitFullscreen().catch(err => {
-                        console.error(`Lỗi khi thoát chế độ toàn màn hình: ${err.message}`);
-                    });
-                    document.body.classList.remove('fullscreen-mode');
-                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                }
-            }
+// Kích hoạt chế độ toàn màn hình
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        document.body.classList.add('fullscreen-mode');
+    } else {
+        document.exitFullscreen();
+        document.body.classList.remove('fullscreen-mode');
+    }
+}
+
+// Xử lý sự kiện thay đổi kích thước màn hình
+window.addEventListener('resize', () => {
+    // Không cần xử lý gì thêm vì CSS đã tự xử lý
+});
+
+// Xử lý sự kiện thay đổi kích thước màn hình
+window.addEventListener('resize', () => {
+    if (document.fullscreenElement) {
+        const activeImage = document.querySelector('.page-viewer.active');
+        if (activeImage) {
+            activeImage.style.maxHeight = '100vh';
+            activeImage.style.maxWidth = '100vw';
+        }
+    }
+});
 
             // Gắn sự kiện cho nút toàn màn hình
             fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -481,9 +489,22 @@ playBtn.addEventListener('click', () => {
 });
 
 // Khi chuyển trang, gọi lại loadAudioAndSub
-function showPage(idx) {
-    currentPage = idx;
-    loadAudioAndSub(idx);
+function showPage(index) {
+    // Ẩn tất cả các trang trước khi hiển thị trang mới
+    pages.forEach((page) => {
+        page.classList.remove('active');
+    });
+    
+    // Hiển thị trang được chọn
+    pages[index].classList.add('active');
+    
+    // Cập nhật chỉ số trang
+    currentPageEl.textContent = index + 1;
+    currentPage = index;
+
+    // Các logic khác giữ nguyên
+    loadAudioAndSub(index);
+    updateProgress();
 }
 loadAudioAndSub(0); // Trang đầu tiên
 
