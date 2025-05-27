@@ -81,5 +81,33 @@ public function suaAnh($id_anh, $so_trang, $duong_dan_anh = null) {
     public function someMethod($so_trang, $duong_dan_anh = null) {
         // ...
     }
+
+    public function suaAnhAjax() {
+        $id_anh = (int)$_POST['id_anh'];
+        $so_trang = (int)$_POST['so_trang'];
+        $model = $this->model;
+        $anh = $model->layThongTinAnh($id_anh);
+        if (!$anh) throw new Exception('Không tìm thấy ảnh');
+
+        // Nếu có ảnh mới
+        if (isset($_FILES['duong_dan_anh']) && $_FILES['duong_dan_anh']['error'] === UPLOAD_ERR_OK) {
+            $file_path_cu = __DIR__ . "/../../../" . $anh['duong_dan_anh'];
+            if (file_exists($file_path_cu)) unlink($file_path_cu);
+
+            $target_dir = __DIR__ . "/../../../uploads/anhchuong/";
+            if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
+            $file_extension = pathinfo($_FILES["duong_dan_anh"]["name"], PATHINFO_EXTENSION);
+            $file_name = uniqid() . '.' . $file_extension;
+            $file_path_moi = $target_dir . $file_name;
+
+            if (!move_uploaded_file($_FILES["duong_dan_anh"]["tmp_name"], $file_path_moi)) {
+                throw new Exception('Không thể tải lên ảnh mới.');
+            }
+            $duong_dan_anh_moi = "uploads/anhchuong/" . $file_name;
+            $model->suaAnh($id_anh, $so_trang, $duong_dan_anh_moi);
+        } else {
+            $model->suaAnh($id_anh, $so_trang);
+        }
+    }
 }
 ?>

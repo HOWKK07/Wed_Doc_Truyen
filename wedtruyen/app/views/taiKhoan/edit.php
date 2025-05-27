@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
 
             <button type="submit">Cập Nhật</button>
+            <button type="button" onclick="window.history.back();" style="margin-left:10px;">Hủy</button>
         </form>
     </div>
 </body>
