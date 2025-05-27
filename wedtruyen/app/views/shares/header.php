@@ -13,6 +13,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <div id="search-results" style="display:none;position:absolute;top:36px;left:0;width:100%;background:#fff;border:1px solid #ddd;max-height:300px;overflow-y:auto;z-index:10000;border-radius:0 0 6px 6px;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
         </div>
  
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/xepHangTruyen.php">Xếp Hạng</a>
         
         <?php if (isset($_SESSION['user'])): ?>
             <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php">Thư viện của tôi</a>
