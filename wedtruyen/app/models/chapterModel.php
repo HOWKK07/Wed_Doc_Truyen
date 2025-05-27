@@ -7,10 +7,10 @@ class ChapterModel {
     }
 
     // Thêm chapter mới
-    public function themChapter($id_truyen, $so_chuong, $tieu_de) {
-        $sql = "INSERT INTO chuong (id_truyen, so_chuong, tieu_de) VALUES (?, ?, ?)";
+    public function themChapter($id_truyen, $so_chuong, $tieu_de, $id_nguoidung) {
+        $sql = "INSERT INTO chuong (id_truyen, so_chuong, tieu_de, id_nguoidung) VALUES (?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iis", $id_truyen, $so_chuong, $tieu_de);
+        $stmt->bind_param("iisi", $id_truyen, $so_chuong, $tieu_de, $id_nguoidung);
 
         if ($stmt->execute()) {
             return $this->conn->insert_id; // Trả về ID của chapter vừa thêm

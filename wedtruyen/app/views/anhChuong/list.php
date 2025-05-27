@@ -130,7 +130,7 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
         <a href="../truyen/chiTietTruyen.php?id_truyen=<?php echo $id_truyen; ?>" class="back-to-detail-btn">← Trở về chi tiết truyện</a>
 
         <!-- Nút thêm trang và lưu thứ tự -->
-        <a href="add.php?id_chuong=<?php echo $id_chuong; ?>&so_trang_bat_dau=<?php echo $so_trang_moi; ?>" class="add-page-btn">+ Thêm Trang</a>
+        <button class="add-page-btn" type="button" onclick="openAddPageModal()">+ Thêm Trang</button>
         <button id="save-order">Lưu thứ tự</button>
 
         <!-- Hiển thị danh sách trang -->
@@ -173,6 +173,10 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
                         <?php if (!empty($audio['duong_dan_sub'])): ?>
                             <a href="/Wed_Doc_Truyen/<?php echo htmlspecialchars($audio['duong_dan_sub']); ?>" target="_blank">Xem sub</a>
                         <?php endif; ?>
+
+                        <!-- Nút Sửa/Xóa -->
+                        <a href="#" class="edit-btn" onclick="openEditModal(<?php echo $anh['id_anh']; ?>, <?php echo $anh['so_trang']; ?>);return false;">Sửa</a>
+                        <a href="delete.php?id_anh=<?php echo $anh['id_anh']; ?>&id_chuong=<?php echo $id_chuong; ?>" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa trang này?');">Xóa</a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -189,6 +193,48 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
             ?>
         </div>
     </div>
+
+    <!-- Modal Sửa Trang Ảnh -->
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:400px;margin:auto;">
+            <span class="close-btn" onclick="closeEditModal()" style="float:right;cursor:pointer;">&times;</span>
+            <h3>Sửa Trang Ảnh</h3>
+            <form id="editForm" enctype="multipart/form-data">
+                <input type="hidden" name="id_anh" id="edit_id_anh">
+                <label>Số trang:</label>
+                <input type="number" name="so_trang" id="edit_so_trang" required><br>
+                <label>Đổi ảnh (nếu muốn):</label>
+                <input type="file" name="duong_dan_anh" accept="image/*"><br>
+                <!-- Thêm dòng này để đổi audio -->
+                <label>Đổi audio (nếu muốn):</label>
+                <input type="file" name="audio_file" accept="audio/*"><br>
+                <button type="submit">Lưu</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Popup thêm trang -->
+    <div id="addPageModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:400px;margin:auto;">
+            <span class="close-btn" onclick="closeAddPageModal()" style="float:right;cursor:pointer;">&times;</span>
+            <h3>Thêm Trang Ảnh</h3>
+            <form id="addPageForm" enctype="multipart/form-data">
+                <input type="hidden" name="id_chuong" value="<?php echo $id_chuong; ?>">
+                <label>Chọn ảnh:</label>
+                <input type="file" name="anh[]" accept="image/*" multiple required><br>
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" onclick="closeAddPageModal()" style="margin-right:10px;">Hủy</button>
+                    <button type="submit">Thêm Trang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+    .modal {position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:9999;}
+    .modal-content {background:#fff;padding:24px;border-radius:8px;position:relative;}
+    .close-btn {font-size:24px;}
+    </style>
 
     <script>
         const pageList = document.getElementById('page-list');
@@ -258,6 +304,63 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
                 alert('Có lỗi xảy ra khi cập nhật thứ tự.');
             });
         });
+
+        // Mở modal sửa trang ảnh
+        function openEditModal(id_anh, so_trang) {
+            document.getElementById('edit_id_anh').value = id_anh;
+            document.getElementById('edit_so_trang').value = so_trang;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        // Đóng modal sửa trang ảnh
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('editForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const res = await fetch('edit_ajax.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                alert('Cập nhật thành công!');
+                location.reload();
+            } else {
+                alert('Lỗi: ' + (data.error || 'Không thể cập nhật'));
+            }
+        };
+
+        // Mở modal thêm trang ảnh
+        function openAddPageModal() {
+            document.getElementById('addPageModal').style.display = 'flex';
+        }
+
+        // Đóng modal thêm trang ảnh
+        function closeAddPageModal() {
+            document.getElementById('addPageModal').style.display = 'none';
+        }
+
+        // Xử lý submit form thêm trang bằng AJAX
+        document.getElementById('addPageForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=<?php echo $id_chuong; ?>', { method: 'POST', body: formData });
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                // Nếu không phải JSON, hiển thị text trả về (trường hợp lỗi PHP)
+                alert(text);
+                return;
+            }
+            if (data.success) {
+                alert('Thêm trang thành công!');
+                location.reload();
+            } else {
+                alert('Lỗi: ' + (data.error || 'Không thể thêm trang'));
+            }
+        };
     </script>
 </body>
 </html>

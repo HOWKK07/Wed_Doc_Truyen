@@ -16,56 +16,35 @@ class ChapterController {
 
     // Xử lý thêm chapter
     public function themChapter() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_truyen = $_POST['id_truyen'];
-            if (isset($_SESSION['user']['id_nguoidung'])) {
-                $id_nguoidung = $_SESSION['user']['id_nguoidung'];
+        // Nếu có kiểm tra quyền:
+        if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
+            // Nếu là AJAX (có header JSON), trả về JSON lỗi thay vì redirect
+            if (
+                isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+            ) {
+                echo json_encode(['success' => false, 'error' => 'Bạn không có quyền thực hiện thao tác này!']);
+                exit;
             } else {
-                throw new Exception("Bạn cần đăng nhập để thêm chương.");
+                header('Location: /path/to/login.php');
+                exit;
             }
-            $so_chuong = $_POST['so_chuong'];
-            $tieu_de = $_POST['tieu_de'];
+        }
 
-            if (empty($id_truyen) || empty($so_chuong) || empty($tieu_de)) {
-                throw new Exception("Vui lòng điền đầy đủ thông tin.");
-            }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id_truyen = isset($_GET['id_truyen']) ? (int)$_GET['id_truyen'] : 0;
+            $so_chuong = isset($_POST['so_chuong']) ? (int)$_POST['so_chuong'] : 0;
+            $tieu_de = isset($_POST['tieu_de']) ? trim($_POST['tieu_de']) : '';
+            $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
 
-            $sql = "INSERT INTO chuong (id_truyen, id_nguoidung, so_chuong, tieu_de) VALUES (?, ?, ?, ?)";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("iiis", $id_truyen, $id_nguoidung, $so_chuong, $tieu_de);
-            if (!$stmt->execute()) {
-                throw new Exception("Không thể thêm chapter.");
-            }
-            $id_chuong = $this->conn->insert_id;
-
-            // Gửi thông báo cho các user đã theo dõi truyện này
-            $stmt = $this->conn->prepare("SELECT id_nguoidung FROM follows WHERE id_truyen = ?");
-            $stmt->bind_param("i", $id_truyen);
-            $stmt->execute();
-            $resultFollows = $stmt->get_result();
-
-            // Lấy tên truyện
-            $stmtTenTruyen = $this->conn->prepare("SELECT ten_truyen FROM truyen WHERE id_truyen = ?");
-            $stmtTenTruyen->bind_param("i", $id_truyen);
-            $stmtTenTruyen->execute();
-            $resultTenTruyen = $stmtTenTruyen->get_result();
-            $rowTenTruyen = $resultTenTruyen->fetch_assoc();
-            $ten_truyen = $rowTenTruyen ? $rowTenTruyen['ten_truyen'] : '';
-
-            // Nội dung thông báo có tên truyện
-            $noi_dung = "Truyện <b>$ten_truyen</b> có chương mới: <b>$tieu_de</b>!";
-            while ($row = $resultFollows->fetch_assoc()) {
-                $id_nguoidung_follow = $row['id_nguoidung'];
-                $stmt2 = $this->conn->prepare("INSERT INTO notifications (id_nguoidung, id_chuong, noi_dung) VALUES (?, ?, ?)");
-                $stmt2->bind_param("iis", $id_nguoidung_follow, $id_chuong, $noi_dung);
-                $stmt2->execute();
+            if ($id_truyen <= 0 || $so_chuong <= 0 || $tieu_de === '' || $id_nguoidung <= 0) {
+                throw new Exception('Dữ liệu không hợp lệ');
             }
 
-            // Sau khi thêm chương thành công:
-            $url = "../truyen/chiTietTruyen.php?id_truyen=" . $id_truyen;
-            $url = trim($url); // loại bỏ khoảng trắng và ký tự xuống dòng
-            header("Location: $url");
-            exit;
+            $result = $this->model->themChapter($id_truyen, $so_chuong, $tieu_de, $id_nguoidung);
+            if (!$result) {
+                throw new Exception('Không thể thêm chapter');
+            }
         }
     }
 
@@ -83,13 +62,22 @@ class ChapterController {
             $result = $this->model->suaChapter($id_chuong, $so_chuong, $tieu_de);
 
             if ($result) {
-                $id_truyen = isset($_POST['id_truyen']) ? preg_replace('/[\r\n]+/', '', $_POST['id_truyen']) : '';
-                if (!$id_truyen) {
-                    throw new Exception("Không tìm thấy ID truyện.");
+                // Nếu là AJAX thì trả về JSON, nếu không thì redirect
+                if (
+                    isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+                ) {
+                    echo json_encode(['success' => true]);
+                    exit;
+                } else {
+                    $id_truyen = isset($_POST['id_truyen']) ? preg_replace('/[\r\n]+/', '', $_POST['id_truyen']) : '';
+                    if (!$id_truyen) {
+                        throw new Exception("Không tìm thấy ID truyện.");
+                    }
+                    $url = "../truyen/chiTietTruyen.php?id_truyen=" . $id_truyen;
+                    header("Location: $url");
+                    exit;
                 }
-                $url = "../truyen/chiTietTruyen.php?id_truyen=" . $id_truyen;
-                header("Location: $url");
-                exit;
             } else {
                 throw new Exception("Không thể sửa chapter.");
             }

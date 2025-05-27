@@ -4,29 +4,24 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
 <div class="menu">
-    <a href="/Wed_Doc_Truyen/wedtruyen/index.php" class="logo">Web Đọc Truyện</a>
-    
+    <a href="/Wed_Doc_Truyen/wedtruyen/index.php" class="logo">Web Đọc</a>
     <div class="nav-links">
         <!-- Ô tìm kiếm truyện -->
         <div style="position:relative;display:inline-block;">
-            <input type="text" id="search-truyen" placeholder="Tìm truyện..." autocomplete="off" style="padding:6px 12px;border-radius:4px;border:1px solid #ccc;width:180px;">
+            <input type="text" id="search-truyen" placeholder="Tìm truyện..." autocomplete="off" style="padding:6px 12px;border-radius:4px;border:1px solid #ccc;width:240px;">
             <div id="search-results" style="display:none;position:absolute;top:36px;left:0;width:100%;background:#fff;border:1px solid #ddd;max-height:300px;overflow-y:auto;z-index:10000;border-radius:0 0 6px 6px;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
         </div>
- 
-        
-        <?php if (isset($_SESSION['user'])): ?>
-            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php">Thư viện của tôi</a>
-            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/lichSuDoc.php">Lịch sử đọc</a>
-
-        <?php endif; ?>
+        <a href="/Wed_Doc_Truyen/wedtruyen/index.php">Trang chủ</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php">Thư viện của tôi</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/lichSuDoc.php">Lịch sử đọc</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/theLoai/list.php">Thể loại</a>
+        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php">Loại truyện</a>
         <?php if (isset($_SESSION['user']['vai_tro']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
-    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/admin/admin.php">Admin Panel</a>
-<?php endif; ?>
+            <a href="/Wed_Doc_Truyen/wedtruyen/app/views/admin/admin.php">Admin Panel</a>
+        <?php endif; ?>
     </div>
-
     <div class="user-info">
-        <?php if (isset($_SESSION['user'])): ?>
-        <!-- Nút chuông thông báo -->
+        <!-- Nút chuông thông báo luôn hiển thị -->
         <div class="notification-wrapper" style="display:inline-block;position:relative;">
             <button id="notification-btn" style="background:none;border:none;cursor:pointer;position:relative;">
                 <i class="fas fa-bell" style="font-size:22px;color:#ffb100;"></i>
@@ -36,24 +31,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <div id="notification-list" style="padding:10px 0;"></div>
             </div>
         </div>
-        <!-- Dropdown tài khoản -->
-        <div class="account-dropdown-wrapper" style="display:inline-block;position:relative;">
-            <button id="account-btn" style="background:none;border:none;cursor:pointer;position:relative;margin-left:10px;">
-                <i class="fas fa-user-circle" style="font-size:26px;color:#fff;"></i>
-                <span style="vertical-align:middle;">&#9660;</span>
-            </button>
-            <div id="account-dropdown" style="display:none;position:absolute;right:0;top:36px;width:180px;background:#23272f;color:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:1000;">
-                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/edit.php?id=<?php echo $_SESSION['user']['id_nguoidung']; ?>" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
-                    <i class="fas fa-user" style="margin-right:10px;"></i> Thông tin tài khoản
-                </a>
-                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
-                    <i class="fas fa-history" style="margin-right:10px;"></i> Lịch sử
-                </a>
-                <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/logout.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
-                    <i class="fas fa-power-off" style="margin-right:10px;"></i> Đăng xuất
-                </a>
+        <?php if (isset($_SESSION['user'])): ?>
+            <!-- Dropdown tài khoản -->
+            <div class="account-dropdown-wrapper" style="display:inline-block;position:relative;">
+                <button id="account-btn" style="background:none;border:none;cursor:pointer;position:relative;margin-left:10px;">
+                    <i class="fas fa-user-circle" style="font-size:26px;color:#fff;"></i>
+                    <span style="vertical-align:middle;">&#9660;</span>
+                </button>
+                <div id="account-dropdown" style="display:none;position:absolute;right:0;top:36px;width:180px;background:#23272f;color:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:1000;">
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/edit.php?id=<?php echo $_SESSION['user']['id_nguoidung']; ?>" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                        <i class="fas fa-user" style="margin-right:10px;"></i> Thông tin tài khoản
+                    </a>
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/lichSuDoc.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                        <i class="fas fa-history" style="margin-right:10px;"></i> Lịch sử
+                    </a>
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/logout.php" style="display:flex;align-items:center;padding:12px 16px;text-decoration:none;color:#fff;">
+                        <i class="fas fa-power-off" style="margin-right:10px;"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
-        </div>
             <span>Xin chào, <?php echo htmlspecialchars($_SESSION['user']['ten_dang_nhap']); ?>!</span>
         <?php else: ?>
             <a href="/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/login.php" class="login-btn">Đăng nhập</a>

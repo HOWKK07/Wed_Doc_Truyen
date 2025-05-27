@@ -73,8 +73,7 @@ class AnhChuongController {
                     $model->themAnh($id_chuong, $duong_dan_anh, $so_trang);
                 }
             }
-            header("Location: list.php?id_chuong=$id_chuong");
-            exit();
+            return;
         }
     }
 
@@ -95,6 +94,52 @@ class AnhChuongController {
                 echo "Lỗi: Không thể thêm trang.";
             }
         }
+    }
+
+    // Xử lý cập nhật ảnh chương qua AJAX
+    public function suaAnhAjax() {
+        $id_anh = (int)$_POST['id_anh'];
+        $so_trang = (int)$_POST['so_trang'];
+        $model = new AnhChuongModel($this->conn);
+        $anh = $model->layThongTinAnh($id_anh);
+        if (!$anh) throw new Exception('Không tìm thấy ảnh');
+
+        // Xử lý đổi ảnh nếu có
+        $duong_dan_anh_moi = null;
+        if (isset($_FILES['duong_dan_anh']) && $_FILES['duong_dan_anh']['error'] === UPLOAD_ERR_OK) {
+            $target_dir = __DIR__ . "/../../../uploads/anhchuong/";
+            if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
+            $file_extension = pathinfo($_FILES["duong_dan_anh"]["name"], PATHINFO_EXTENSION);
+            $file_name = uniqid() . '.' . $file_extension;
+            $file_path_moi = $target_dir . $file_name;
+            if (!move_uploaded_file($_FILES["duong_dan_anh"]["tmp_name"], $file_path_moi)) {
+                throw new Exception('Không thể tải lên ảnh mới.');
+            }
+            $duong_dan_anh_moi = "uploads/anhchuong/" . $file_name;
+        }
+
+        // Xử lý đổi audio nếu có
+        if (isset($_FILES['audio_file']) && $_FILES['audio_file']['error'] === UPLOAD_ERR_OK) {
+            $audio_dir = __DIR__ . "/../../../uploads/audio_trang/";
+            if (!is_dir($audio_dir)) mkdir($audio_dir, 0777, true);
+            $audio_ext = pathinfo($_FILES["audio_file"]["name"], PATHINFO_EXTENSION);
+            $audio_name = uniqid('audio_') . '.' . $audio_ext;
+            $audio_path = $audio_dir . $audio_name;
+            if (!move_uploaded_file($_FILES["audio_file"]["tmp_name"], $audio_path)) {
+                throw new Exception('Không thể tải lên audio mới.');
+            }
+            $duong_dan_audio = "uploads/audio_trang/" . $audio_name;
+
+            // Cập nhật hoặc thêm vào bảng audio_trang
+            $sql = "INSERT INTO audio_trang (id_anh, duong_dan_audio) VALUES (?, ?)
+                    ON DUPLICATE KEY UPDATE duong_dan_audio = VALUES(duong_dan_audio)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("is", $id_anh, $duong_dan_audio);
+            $stmt->execute();
+        }
+
+        // Cập nhật ảnh chương
+        $model->suaAnh($id_anh, $so_trang, $duong_dan_anh_moi);
     }
 }
 require_once '../../controllers/anhChuongController.php';

@@ -175,7 +175,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                 <button class="start-reading" disabled>Không có chương để đọc</button>
                             <?php endif; ?>
 
-                            <a href="../chapter/add.php?id_truyen=<?php echo $id_truyen; ?>" class="add-chapter-btn">Thêm Chapter</a>
+                            <button type="button" class="add-chapter-btn" onclick="openAddChapterModal()">Thêm Chapter</button>
 
                             <button id="follow-button" class="add-to-library" data-followed="<?php echo $is_followed ? 'true' : 'false'; ?>">
                                 <?php echo $is_followed ? 'Xóa khỏi thư viện' : 'Thêm vào thư viện'; ?>
@@ -200,9 +200,17 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                             <!-- Các nút chức năng -->
                             <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
                                 <div class="chapter-actions">
-                                    <a href="../anhChuong/add.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-success">Thêm Trang</a>
                                     <a href="../anhChuong/list.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-primary">Danh Sách Trang</a>
-                                    <a href="../chapter/edit.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>" class="btn btn-warning">Sửa</a>
+                                    <button type="button"
+    class="btn btn-success"
+    onclick="openAddPageModal('<?php echo htmlspecialchars($chuong['id_chuong']); ?>')"
+>Thêm Trang</button>
+                                    <button type="button"
+    class="btn btn-warning"
+    onclick="openEditChapterModal('<?php echo htmlspecialchars($chuong['id_chuong']); ?>', '<?php echo htmlspecialchars($chuong['so_chuong']); ?>', '<?php echo htmlspecialchars(addslashes($chuong['tieu_de'])); ?>')"
+>
+    Sửa
+</button>
                                     <a href="../chapter/delete.php?id_chuong=<?php echo htmlspecialchars($chuong['id_chuong']); ?>&id_truyen=<?php echo htmlspecialchars($chuong['id_truyen']); ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa chương này?');">Xóa</a>
                                 </div>
                             <?php endif; ?>
@@ -245,6 +253,65 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
 
     <!-- Footer -->
     <?php include '../shares/footer.php'; ?>
+
+    <!-- Popup Thêm Chapter -->
+<div id="addChapterModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeAddChapterModal()">&times;</span>
+    <h3>Thêm Chapter</h3>
+    <form id="addChapterForm">
+      <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+      <label>Số chương:</label>
+      <input type="number" name="so_chuong" required>
+      <label>Tiêu đề:</label>
+      <input type="text" name="tieu_de" required>
+      <button type="submit">Thêm</button>
+    </form>
+    <div id="addChapterError" style="color:red;"></div>
+  </div>
+</div>
+
+<!-- Popup Sửa Chapter -->
+<div id="editChapterModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeEditChapterModal()">&times;</span>
+    <h3>Sửa Chapter</h3>
+    <form id="editChapterForm">
+      <input type="hidden" name="id_chuong" id="edit_id_chuong">
+      <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+      <label>Số chương:</label>
+      <input type="number" name="so_chuong" id="edit_so_chuong" required>
+      <label>Tiêu đề:</label>
+      <input type="text" name="tieu_de" id="edit_tieu_de" required>
+      <button type="submit">Cập nhật</button>
+    </form>
+    <div id="editChapterError" style="color:red;"></div>
+  </div>
+</div>
+
+<!-- Popup Thêm Trang -->
+<div id="addPageModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:400px;margin:auto;">
+    <span class="close-btn" onclick="closeAddPageModal()" style="float:right;cursor:pointer;">&times;</span>
+    <h3>Thêm Trang Ảnh</h3>
+    <form id="addPageForm" enctype="multipart/form-data">
+      <input type="hidden" name="id_chuong" id="add_page_id_chuong">
+      <label>Chọn ảnh:</label>
+      <input type="file" name="anh[]" accept="image/*" multiple required><br>
+      <div style="margin-top:16px; text-align:right;">
+        <button type="button" onclick="closeAddPageModal()" style="margin-right:10px;">Hủy</button>
+        <button type="submit">Thêm Trang</button>
+      </div>
+    </form>
+    <div id="addPageError" style="color:red;"></div>
+  </div>
+</div>
+
+<style>
+.modal {position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.modal-content {background:#fff;padding:24px;border-radius:8px;position:relative;}
+.close-btn {font-size:24px;cursor:pointer;position:absolute;top:8px;right:16px;}
+</style>
 
     <script>
         document.getElementById('follow-button').addEventListener('click', function () {
@@ -299,6 +366,67 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                 }
             });
         }
+
+        // Close modals when clicking outside of them
+        window.addEventListener('click', function (event) {
+            const addChapterModal = document.getElementById('addChapterModal');
+            const editChapterModal = document.getElementById('editChapterModal');
+            const addPageModal = document.getElementById('addPageModal');
+
+            if (event.target === addChapterModal) {
+                closeAddChapterModal();
+            } else if (event.target === editChapterModal) {
+                closeEditChapterModal();
+            } else if (event.target === addPageModal) {
+                closeAddPageModal();
+            }
+        });
+
+        function openAddChapterModal() {
+            document.getElementById('addChapterModal').style.display = 'flex';
+        }
+        function closeAddChapterModal() {
+            document.getElementById('addChapterModal').style.display = 'none';
+            document.getElementById('addChapterError').innerText = '';
+        }
+        function openEditChapterModal(id, so_chuong, tieu_de) {
+            document.getElementById('edit_id_chuong').value = id;
+            document.getElementById('edit_so_chuong').value = so_chuong;
+            document.getElementById('edit_tieu_de').value = tieu_de;
+            document.getElementById('editChapterModal').style.display = 'flex';
+        }
+        function closeEditChapterModal() {
+            document.getElementById('editChapterModal').style.display = 'none';
+            document.getElementById('editChapterError').innerText = '';
+        }
+        function openAddPageModal(id_chuong) {
+            document.getElementById('add_page_id_chuong').value = id_chuong;
+            document.getElementById('addPageModal').style.display = 'flex';
+        }
+        function closeAddPageModal() {
+            document.getElementById('addPageModal').style.display = 'none';
+            document.getElementById('addPageError').innerText = '';
+        }
+
+        document.getElementById('addPageForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const id_chuong = document.getElementById('add_page_id_chuong').value;
+    const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=' + id_chuong, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = null; }
+    if (data && data.success) {
+        alert('Thêm trang thành công!');
+        location.reload();
+    } else {
+        document.getElementById('addPageError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
+    }
+};
     </script>
 
     <?php
