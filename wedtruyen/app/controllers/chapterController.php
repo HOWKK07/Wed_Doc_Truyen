@@ -14,8 +14,7 @@ class ChapterController {
         $this->model = new ChapterModel($conn);
     }
 
-    // Xử lý thêm chapter
-// Xử lý thêm chapter
+ // Xử lý thêm chapter
 public function themChapter() {
     // Nếu có kiểm tra quyền:
     if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
@@ -46,6 +45,17 @@ public function themChapter() {
         $this->conn->begin_transaction();
 
         try {
+            // Kiểm tra chapter đã tồn tại chưa (tránh trùng lặp)
+            $check_sql = "SELECT id_chuong FROM chuong WHERE id_truyen = ? AND so_chuong = ?";
+            $check_stmt = $this->conn->prepare($check_sql);
+            $check_stmt->bind_param("ii", $id_truyen, $so_chuong);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
+            
+            if ($check_result->num_rows > 0) {
+                throw new Exception('Chương ' . $so_chuong . ' đã tồn tại!');
+            }
+
             // Thêm chapter
             $result = $this->model->themChapter($id_truyen, $so_chuong, $tieu_de, $id_nguoidung);
             if (!$result) {
@@ -61,16 +71,23 @@ public function themChapter() {
             $stmt_truyen->execute();
             $truyen = $stmt_truyen->get_result()->fetch_assoc();
 
-            // Tạo thông báo cho người theo dõi
+            // Tạo thông báo cho người theo dõi (chỉ 1 lần)
             $noi_dung = 'Truyện "' . $truyen['ten_truyen'] . '" có chương mới: Chương ' . $so_chuong . ' - ' . $tieu_de;
             
-            $sql_notify = "INSERT INTO notifications (id_nguoidung, noi_dung, id_chuong, loai_thongbao)
-                          SELECT f.id_nguoidung, ?, ?, 'chapter_moi'
+            // Sử dụng INSERT IGNORE để tránh trùng lặp notification
+            $sql_notify = "INSERT IGNORE INTO notifications (id_nguoidung, noi_dung, id_chuong, loai_thongbao, ngay_tao)
+                          SELECT DISTINCT f.id_nguoidung, ?, ?, 'chapter_moi', NOW()
                           FROM follows f
-                          WHERE f.id_truyen = ?";
+                          WHERE f.id_truyen = ?
+                          AND NOT EXISTS (
+                              SELECT 1 FROM notifications n 
+                              WHERE n.id_nguoidung = f.id_nguoidung 
+                              AND n.id_chuong = ?
+                              AND n.loai_thongbao = 'chapter_moi'
+                          )";
                           
             $stmt_notify = $this->conn->prepare($sql_notify);
-            $stmt_notify->bind_param("sii", $noi_dung, $id_chuong, $id_truyen);
+            $stmt_notify->bind_param("siii", $noi_dung, $id_chuong, $id_truyen, $id_chuong);
             $stmt_notify->execute();
 
             // Commit transaction
