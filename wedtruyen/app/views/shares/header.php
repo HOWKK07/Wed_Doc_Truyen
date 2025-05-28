@@ -63,38 +63,128 @@ document.addEventListener('DOMContentLoaded', function() {
     const dropdown = document.getElementById('notification-dropdown');
     const list = document.getElementById('notification-list');
     const count = document.getElementById('notification-count');
+    let lastCheckTime = new Date().toISOString();
+
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return 'Vừa xong';
+        if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + ' phút trước';
+        if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + ' giờ trước';
+        if (diffInSeconds < 604800) return Math.floor(diffInSeconds / 86400) + ' ngày trước';
+        
+        return date.toLocaleDateString('vi-VN');
+    }
+
+    function markAsRead(id_notification) {
+        fetch('/Wed_Doc_Truyen/wedtruyen/app/api/notifications.php?action=mark_read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'id_notification=' + id_notification
+        });
+    }
 
     function fetchNotifications() {
-        if (!list) {
-            alert('Không tìm thấy phần tử notification-list!');
-            return;
-        }
-        fetch('/Wed_Doc_Truyen/wedtruyen/app/api/notifications.php')
+        if (!list) return;
+        
+        fetch('/Wed_Doc_Truyen/wedtruyen/app/api/notifications.php?action=list')
             .then(res => res.json())
             .then(data => {
-                console.log('Thông báo:', data); // Thêm dòng này để kiểm tra
                 list.innerHTML = '';
-                let unread = 0;
-                if (data.length === 0) {
-                    list.innerHTML = '<div style="padding:12px;text-align:center;color:#888;">Không có thông báo mới.</div>';
+                
+                if (!data.notifications || data.notifications.length === 0) {
+                    list.innerHTML = '<div style="padding:12px;text-align:center;color:#888;">Không có thông báo nào.</div>';
                 } else {
-                    data.forEach(n => {
-                        if (!n.da_doc) unread++;
-                        // Chỉ render nếu id_chuong hợp lệ (khác null, khác "null", là số)
-                        if (n.id_chuong && n.id_chuong !== "null" && !isNaN(Number(n.id_chuong))) {
-                            list.innerHTML += `<div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;${n.da_doc ? 'color:#888;' : ''}">
-<a href="/Wed_Doc_Truyen/wedtruyen/app/views/chapter/docChapter.php?id_chuong=${n.id_chuong}" style="color:inherit;text-decoration:none;">
-    ${n.noi_dung}
-    <div style="font-size:12px;color:#aaa;margin-top:2px;">${n.ngay_tao}</div>
-</a>
-</div>`;
-                        }
+                    // Header với nút đánh dấu tất cả đã đọc
+                    if (data.unread_count > 0) {
+                        list.innerHTML = `
+                            <div style="padding:8px 16px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:500;font-size:14px;">Thông báo (${data.unread_count} chưa đọc)</span>
+                                <button onclick="markAllAsRead()" style="font-size:12px;color:#1976d2;background:none;border:none;cursor:pointer;">Đánh dấu tất cả đã đọc</button>
+                            </div>
+                        `;
+                    }
+                    
+                    data.notifications.forEach(n => {
+                        const isUnread = !n.da_doc;
+                        const bgColor = isUnread ? '#e3f2fd' : '#fff';
+                        const fontWeight = isUnread ? '500' : 'normal';
+                        
+                        list.innerHTML += `
+                            <div class="notification-item" 
+                                 style="padding:12px 16px;border-bottom:1px solid #f0f0f0;background:${bgColor};cursor:pointer;transition:background 0.2s;"
+                                 onmouseover="this.style.background='#f5f5f5'"
+                                 onmouseout="this.style.background='${bgColor}'"
+                                 onclick="notificationClick(${n.id_notification}, ${n.id_chuong || 'null'})">
+                                <div style="font-weight:${fontWeight};color:#333;margin-bottom:4px;">
+                                    ${n.noi_dung}
+                                </div>
+                                <div style="font-size:12px;color:#666;display:flex;justify-content:space-between;">
+                                    <span>${formatDateTime(n.ngay_tao)}</span>
+                                    ${isUnread ? '<span style="color:#1976d2;">● Mới</span>' : ''}
+                                </div>
+                            </div>
+                        `;
                     });
                 }
-                count.textContent = unread;
-                count.style.display = unread > 0 ? 'block' : 'none';
+                
+                // Cập nhật số thông báo chưa đọc
+                count.textContent = data.unread_count || 0;
+                count.style.display = data.unread_count > 0 ? 'block' : 'none';
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải thông báo:', error);
             });
     }
+
+    // Xử lý click vào thông báo
+    window.notificationClick = function(id_notification, id_chuong) {
+        // Đánh dấu đã đọc
+        markAsRead(id_notification);
+        
+        // Chuyển đến trang chapter nếu có
+        if (id_chuong) {
+            window.location.href = `/Wed_Doc_Truyen/wedtruyen/app/views/chapter/docChapter.php?id_chuong=${id_chuong}`;
+        }
+    };
+
+    // Đánh dấu tất cả đã đọc
+    window.markAllAsRead = function() {
+        fetch('/Wed_Doc_Truyen/wedtruyen/app/api/notifications.php?action=mark_all_read', {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                fetchNotifications();
+            }
+        });
+    };
+
+    // Kiểm tra thông báo mới mỗi 30 giây
+    function checkNewNotifications() {
+        fetch(`/Wed_Doc_Truyen/wedtruyen/app/api/notifications.php?action=check_new&last_check=${lastCheckTime}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.new_count > 0) {
+                    // Có thông báo mới, làm mới danh sách
+                    fetchNotifications();
+                    
+                    // Hiển thị animation cho chuông
+                    btn.classList.add('notification-pulse');
+                    setTimeout(() => btn.classList.remove('notification-pulse'), 1000);
+                }
+                lastCheckTime = new Date().toISOString();
+            });
+    }
+
+    // Polling mỗi 30 giây
+    setInterval(checkNewNotifications, 30000);
+
+    // Tải thông báo ngay khi load trang
+    fetchNotifications();
 
     btn.addEventListener('click', function(e) {
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
@@ -151,6 +241,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
             searchResults.style.display = 'none';
         }
+        if (!dropdown.contains(e.target) && e.target !== btn) {
+            dropdown.style.display = 'none';
+        }
     });
     searchInput.addEventListener('focus', function() {
         if (searchResults.innerHTML.trim() !== '') searchResults.style.display = 'block';
@@ -192,5 +285,39 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .search-item:hover {
     background: #f6f6f6;
+}
+
+/* Animation cho notification */
+.notification-pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Style cho notification items */
+.notification-item:hover {
+    background: #f5f5f5;
+}
+
+/* Style scrollbar cho notification */
+#notification-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+#notification-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#notification-dropdown::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+#notification-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 </style>
