@@ -408,8 +408,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
             document.getElementById('addPageModal').style.display = 'none';
             document.getElementById('addPageError').innerText = '';
         }
-
-        // Xử lý gửi form Thêm Chapter bằng AJAX
+// Xử lý gửi form Thêm Chapter bằng AJAX
 document.getElementById('addChapterForm').onsubmit = async function(e) {
     e.preventDefault();
     const form = this;
@@ -430,6 +429,46 @@ document.getElementById('addChapterForm').onsubmit = async function(e) {
         location.reload();
     } else {
         document.getElementById('addChapterError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
+    }
+};
+
+// Xử lý gửi form Thêm Trang bằng AJAX
+document.getElementById('addPageForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const id_chuong = document.getElementById('add_page_id_chuong').value;
+    
+    if (!id_chuong) {
+        document.getElementById('addPageError').innerText = 'Vui lòng chọn chương!';
+        return;
+    }
+    
+    try {
+        const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=' + id_chuong, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const text = await res.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Response:', text);
+            document.getElementById('addPageError').innerText = 'Lỗi server: ' + text;
+            return;
+        }
+        
+        if (data && data.success) {
+            alert('Thêm trang thành công!');
+            closeAddPageModal();
+            // Không reload trang, chỉ đóng modal
+        } else {
+            document.getElementById('addPageError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('addPageError').innerText = 'Lỗi kết nối: ' + error.message;
     }
 };
 
