@@ -19,14 +19,19 @@ function createSubtitleFromAudio($audio_path) {
     return null;
 }
 
+// Lấy id_chuong từ URL hoặc POST
+$id_chuong = isset($_GET['id_chuong']) ? (int)$_GET['id_chuong'] : (isset($_POST['id_chuong']) ? (int)$_POST['id_chuong'] : 0);
 $id_anh = isset($_POST['id_anh']) ? (int)$_POST['id_anh'] : 0;
+
 if (!$id_anh) {
     die("Lỗi: Không tìm thấy ID ảnh hợp lệ.");
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id_anh = (int)$_POST['id_anh'];
+if (!$id_chuong) {
+    die("Lỗi: Không tìm thấy ID chương.");
+}
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['audio_file']) && $_FILES['audio_file']['error'] === UPLOAD_ERR_OK) {
         $file_extension = pathinfo($_FILES['audio_file']['name'], PATHINFO_EXTENSION);
         $file_name = uniqid('audio_') . '.' . $file_extension;
