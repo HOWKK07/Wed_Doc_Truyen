@@ -15,38 +15,74 @@ class ChapterController {
     }
 
     // Xử lý thêm chapter
-    public function themChapter() {
-        // Nếu có kiểm tra quyền:
-        if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
-            // Nếu là AJAX (có header JSON), trả về JSON lỗi thay vì redirect
-            if (
-                isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-            ) {
-                echo json_encode(['success' => false, 'error' => 'Bạn không có quyền thực hiện thao tác này!']);
-                exit;
-            } else {
-                header('Location: /path/to/login.php');
-                exit;
-            }
+// Xử lý thêm chapter
+public function themChapter() {
+    // Nếu có kiểm tra quyền:
+    if (!isset($_SESSION['user']) || $_SESSION['user']['vai_tro'] !== 'admin') {
+        // Nếu là AJAX (có header JSON), trả về JSON lỗi thay vì redirect
+        if (
+            isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+        ) {
+            echo json_encode(['success' => false, 'error' => 'Bạn không có quyền thực hiện thao tác này!']);
+            exit;
+        } else {
+            header('Location: /path/to/login.php');
+            exit;
+        }
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id_truyen = isset($_GET['id_truyen']) ? (int)$_GET['id_truyen'] : 0;
+        $so_chuong = isset($_POST['so_chuong']) ? (int)$_POST['so_chuong'] : 0;
+        $tieu_de = isset($_POST['tieu_de']) ? trim($_POST['tieu_de']) : '';
+        $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
+
+        if ($id_truyen <= 0 || $so_chuong <= 0 || $tieu_de === '' || $id_nguoidung <= 0) {
+            throw new Exception('Dữ liệu không hợp lệ');
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_truyen = isset($_GET['id_truyen']) ? (int)$_GET['id_truyen'] : 0;
-            $so_chuong = isset($_POST['so_chuong']) ? (int)$_POST['so_chuong'] : 0;
-            $tieu_de = isset($_POST['tieu_de']) ? trim($_POST['tieu_de']) : '';
-            $id_nguoidung = $_SESSION['user']['id_nguoidung'] ?? 0;
+        // Bắt đầu transaction
+        $this->conn->begin_transaction();
 
-            if ($id_truyen <= 0 || $so_chuong <= 0 || $tieu_de === '' || $id_nguoidung <= 0) {
-                throw new Exception('Dữ liệu không hợp lệ');
-            }
-
+        try {
+            // Thêm chapter
             $result = $this->model->themChapter($id_truyen, $so_chuong, $tieu_de, $id_nguoidung);
             if (!$result) {
                 throw new Exception('Không thể thêm chapter');
             }
+            
+            $id_chuong = $result; // ID của chapter vừa thêm
+
+            // Lấy thông tin truyện
+            $sql_truyen = "SELECT ten_truyen FROM truyen WHERE id_truyen = ?";
+            $stmt_truyen = $this->conn->prepare($sql_truyen);
+            $stmt_truyen->bind_param("i", $id_truyen);
+            $stmt_truyen->execute();
+            $truyen = $stmt_truyen->get_result()->fetch_assoc();
+
+            // Tạo thông báo cho người theo dõi
+            $noi_dung = 'Truyện "' . $truyen['ten_truyen'] . '" có chương mới: Chương ' . $so_chuong . ' - ' . $tieu_de;
+            
+            $sql_notify = "INSERT INTO notifications (id_nguoidung, noi_dung, id_chuong, loai_thongbao)
+                          SELECT f.id_nguoidung, ?, ?, 'chapter_moi'
+                          FROM follows f
+                          WHERE f.id_truyen = ?";
+                          
+            $stmt_notify = $this->conn->prepare($sql_notify);
+            $stmt_notify->bind_param("sii", $noi_dung, $id_chuong, $id_truyen);
+            $stmt_notify->execute();
+
+            // Commit transaction
+            $this->conn->commit();
+            
+        } catch (Exception $e) {
+            // Rollback nếu có lỗi
+            $this->conn->rollback();
+            throw $e;
         }
     }
+}
 
     // Xử lý sửa chapter
     public function suaChapter() {
