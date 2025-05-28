@@ -206,6 +206,7 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
     onclick="openAddPageModal('<?php echo htmlspecialchars($chuong['id_chuong']); ?>')"
 >Thêm Trang</button>
                                     <button type="button"
+                                    
     class="btn btn-warning"
     onclick="openEditChapterModal('<?php echo htmlspecialchars($chuong['id_chuong']); ?>', '<?php echo htmlspecialchars($chuong['so_chuong']); ?>', '<?php echo htmlspecialchars(addslashes($chuong['tieu_de'])); ?>')"
 >
@@ -408,23 +409,52 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
             document.getElementById('addPageError').innerText = '';
         }
 
-        document.getElementById('addPageForm').onsubmit = async function(e) {
+        // Xử lý gửi form Thêm Chapter bằng AJAX
+document.getElementById('addChapterForm').onsubmit = async function(e) {
     e.preventDefault();
-    const formData = new FormData(this);
-    const id_chuong = document.getElementById('add_page_id_chuong').value;
-    const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=' + id_chuong, {
+    const form = this;
+    const so_chuong = form.so_chuong.value;
+    const tieu_de = form.tieu_de.value;
+    const id_truyen = form.id_truyen.value;
+
+    const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/chapter/add_ajax.php?id_truyen=' + id_truyen, {
         method: 'POST',
-        body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `so_chuong=${encodeURIComponent(so_chuong)}&tieu_de=${encodeURIComponent(tieu_de)}`
     });
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch { data = null; }
     if (data && data.success) {
-        alert('Thêm trang thành công!');
+        alert('Thêm chapter thành công!');
         location.reload();
     } else {
-        document.getElementById('addPageError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
+        document.getElementById('addChapterError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
+    }
+};
+
+// Xử lý gửi form Sửa Chapter bằng AJAX
+document.getElementById('editChapterForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const form = this;
+    const id_chuong = form.edit_id_chuong.value;
+    const so_chuong = form.edit_so_chuong.value;
+    const tieu_de = form.edit_tieu_de.value;
+    const id_truyen = form.id_truyen.value;
+
+    const res = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/chapter/edit_ajax.php?id_chuong=' + id_chuong, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `id_chuong=${encodeURIComponent(id_chuong)}&so_chuong=${encodeURIComponent(so_chuong)}&tieu_de=${encodeURIComponent(tieu_de)}&id_truyen=${encodeURIComponent(id_truyen)}`
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = null; }
+    if (data && data.success) {
+        alert('Cập nhật chapter thành công!');
+        location.reload();
+    } else {
+        document.getElementById('editChapterError').innerText = data && data.error ? data.error : 'Có lỗi xảy ra!';
     }
 };
     </script>
