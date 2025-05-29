@@ -35,6 +35,62 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Dropdown styles - Giống dropdown tài khoản */
+.genre-dropdown-wrapper, .type-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.genre-dropdown-btn, .type-dropdown-btn {
+    transition: background-color 0.3s;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.genre-dropdown-btn:hover, .type-dropdown-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.genre-dropdown-menu, .type-dropdown-menu {
+    animation: dropdownOpen 0.2s ease;
+}
+
+@keyframes dropdownOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.genre-grid a:hover, .type-grid a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+/* Grid scrollbar */
+.genre-grid::-webkit-scrollbar, .type-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.genre-grid::-webkit-scrollbar-track, .type-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.genre-grid::-webkit-scrollbar-thumb, .type-grid::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.genre-grid::-webkit-scrollbar-thumb:hover, .type-grid::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 .user-info {
     display: flex;
     align-items: center;
@@ -86,5 +142,11 @@
         flex-direction: column;
         align-items: center;
     }
-}
 
+    .dropdown-menu {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        margin-top: 0;
+    }
+}
