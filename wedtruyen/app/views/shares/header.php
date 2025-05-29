@@ -1,6 +1,14 @@
 <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/header.css">
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// Lấy danh sách thể loại
+$sql_theloai = "SELECT * FROM theloai ORDER BY ten_theloai ASC";
+$result_theloai = $conn->query($sql_theloai);
+
+// Lấy danh sách loại truyện
+$sql_loaitruyen = "SELECT * FROM loai_truyen ORDER BY ten_loai_truyen ASC";
+$result_loaitruyen = $conn->query($sql_loaitruyen);
 ?>
 
 <div class="menu">
@@ -14,8 +22,61 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="/Wed_Doc_Truyen/wedtruyen/index.php">Trang chủ</a>
         <a href="/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/list.php">Thư viện của tôi</a>
         <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/lichSuDoc.php">Lịch sử đọc</a>
-        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/theLoai/list.php">Thể loại</a>
-        <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php">Loại truyện</a>
+        
+        <!-- Dropdown Thể loại -->
+        <div class="genre-dropdown-wrapper" style="display:inline-block;position:relative;">
+            <button class="genre-dropdown-btn" style="background:none;border:none;color:white;padding:8px 15px;cursor:pointer;">
+                Thể loại <span style="font-size:10px;">▼</span>
+            </button>
+            <div class="genre-dropdown-menu" style="display:none;position:absolute;top:100%;left:0;width:400px;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:1000;margin-top:5px;">
+                <div style="padding:15px;border-bottom:1px solid #eee;">
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/theLoai/list.php" style="color:#007bff;text-decoration:none;font-weight:500;">
+                        <i class="fas fa-list"></i> Xem tất cả thể loại
+                    </a>
+                </div>
+                <div class="genre-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0;max-height:400px;overflow-y:auto;padding:10px;">
+                    <?php 
+                    mysqli_data_seek($result_theloai, 0); // Reset pointer
+                    if ($result_theloai && $result_theloai->num_rows > 0): 
+                    ?>
+                        <?php while($theloai = $result_theloai->fetch_assoc()): ?>
+                            <a href="/Wed_Doc_Truyen/wedtruyen/index.php?theloai=<?php echo $theloai['id_theloai']; ?>" 
+                               style="display:block;padding:10px 15px;color:#333;text-decoration:none;transition:all 0.2s;border-radius:4px;">
+                                <?php echo htmlspecialchars($theloai['ten_theloai']); ?>
+                            </a>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dropdown Loại truyện -->
+        <div class="type-dropdown-wrapper" style="display:inline-block;position:relative;">
+            <button class="type-dropdown-btn" style="background:none;border:none;color:white;padding:8px 15px;cursor:pointer;">
+                Loại truyện <span style="font-size:10px;">▼</span>
+            </button>
+            <div class="type-dropdown-menu" style="display:none;position:absolute;top:100%;left:0;width:400px;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:1000;margin-top:5px;">
+                <div style="padding:15px;border-bottom:1px solid #eee;">
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/loaiTruyen/list.php" style="color:#007bff;text-decoration:none;font-weight:500;">
+                        <i class="fas fa-list"></i> Xem tất cả loại truyện
+                    </a>
+                </div>
+                <div class="type-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0;max-height:400px;overflow-y:auto;padding:10px;">
+                    <?php 
+                    mysqli_data_seek($result_loaitruyen, 0); // Reset pointer
+                    if ($result_loaitruyen && $result_loaitruyen->num_rows > 0): 
+                    ?>
+                        <?php while($loaitruyen = $result_loaitruyen->fetch_assoc()): ?>
+                            <a href="/Wed_Doc_Truyen/wedtruyen/index.php?loaitruyen=<?php echo $loaitruyen['id_loai_truyen']; ?>" 
+                               style="display:block;padding:10px 15px;color:#333;text-decoration:none;transition:all 0.2s;border-radius:4px;">
+                                <?php echo htmlspecialchars($loaitruyen['ten_loai_truyen']); ?>
+                            </a>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        
         <?php if (isset($_SESSION['user']['vai_tro']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
             <a href="/Wed_Doc_Truyen/wedtruyen/app/views/admin/admin.php">Admin Panel</a>
         <?php endif; ?>
@@ -263,6 +324,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Dropdown thể loại
+    const genreBtn = document.querySelector('.genre-dropdown-btn');
+    const genreDropdown = document.querySelector('.genre-dropdown-menu');
+    if (genreBtn && genreDropdown) {
+        genreBtn.addEventListener('click', function(e) {
+            genreDropdown.style.display = genreDropdown.style.display === 'block' ? 'none' : 'block';
+            // Đóng dropdown loại truyện nếu đang mở
+            const typeDropdown = document.querySelector('.type-dropdown-menu');
+            if (typeDropdown) typeDropdown.style.display = 'none';
+            e.stopPropagation();
+        });
+    }
+
+    // Dropdown loại truyện
+    const typeBtn = document.querySelector('.type-dropdown-btn');
+    const typeDropdown = document.querySelector('.type-dropdown-menu');
+    if (typeBtn && typeDropdown) {
+        typeBtn.addEventListener('click', function(e) {
+            typeDropdown.style.display = typeDropdown.style.display === 'block' ? 'none' : 'block';
+            // Đóng dropdown thể loại nếu đang mở
+            const genreDropdown = document.querySelector('.genre-dropdown-menu');
+            if (genreDropdown) genreDropdown.style.display = 'none';
+            e.stopPropagation();
+        });
+    }
+
+    // Đóng tất cả dropdown khi click ngoài
+    document.addEventListener('click', function(e) {
+        const genreDropdown = document.querySelector('.genre-dropdown-menu');
+        const typeDropdown = document.querySelector('.type-dropdown-menu');
+        const genreWrapper = document.querySelector('.genre-dropdown-wrapper');
+        const typeWrapper = document.querySelector('.type-dropdown-wrapper');
+        
+        if (genreDropdown && !genreWrapper.contains(e.target)) {
+            genreDropdown.style.display = 'none';
+        }
+        if (typeDropdown && !typeWrapper.contains(e.target)) {
+            typeDropdown.style.display = 'none';
+        }
+    });
 });
 </script>
 <style>
@@ -319,5 +421,127 @@ document.addEventListener('DOMContentLoaded', function() {
 
 #notification-dropdown::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Dropdown menu styles */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-toggle span {
+    font-size: 10px;
+    transition: transform 0.3s;
+}
+
+.dropdown-wrapper:hover .dropdown-toggle span {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background-color: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    z-index: 1000;
+    margin-top: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.dropdown-wrapper:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 5px 0;
+}
+
+/* New dropdown styles for genre and type */
+.genre-dropdown-btn, .type-dropdown-btn {
+    transition: background-color 0.3s;
+    border-radius: 4px;
+}
+
+.genre-dropdown-btn:hover, .type-dropdown-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.genre-dropdown-menu a:hover, .type-dropdown-menu a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+/* Grid scrollbar */
+.genre-grid::-webkit-scrollbar, .type-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.genre-grid::-webkit-scrollbar-track, .type-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.genre-grid::-webkit-scrollbar-thumb, .type-grid::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+/* Responsive dropdown */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        margin-top: 0;
+    }
+    
+    .genre-dropdown-menu, .type-dropdown-menu {
+        width: 100% !important;
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        border-radius: 16px 16px 0 0 !important;
+        max-height: 70vh !important;
+    }
+    
+    .genre-grid, .type-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 </style>
