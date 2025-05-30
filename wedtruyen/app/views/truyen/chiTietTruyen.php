@@ -175,7 +175,11 @@ $binhLuans = $binhLuanController->layBinhLuanTheoTruyen($id_truyen);
                                 <button class="start-reading" disabled>Không có chương để đọc</button>
                             <?php endif; ?>
 
-                            <button type="button" class="add-chapter-btn" onclick="openAddChapterModal()">Thêm Chapter</button>
+                            <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
+                                <button type="button" class="add-chapter-btn" onclick="openAddChapterModal()">Thêm Chapter</button>
+                            <?php endif; ?>
+
+                            
 
                             <button id="follow-button" class="add-to-library" data-followed="<?php echo $is_followed ? 'true' : 'false'; ?>">
                                 <?php echo $is_followed ? 'Xóa khỏi thư viện' : 'Thêm vào thư viện'; ?>
