@@ -71,32 +71,7 @@ $theLoaiList = $conn->query($sqlTheLoai);
             </div>
         <?php endif; ?>
 
-        <!-- Hero Section -->
-        <div class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title">Web Đọc Truyện</h1>
-                <p class="hero-subtitle">Khám phá thế giới truyện tranh đa dạng và hấp dẫn</p>
-                
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <span class="stat-number"><?= number_format($stats['total_truyen'] ?? 0) ?></span>
-                        <span class="stat-label">Truyện</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number"><?= number_format($stats['total_chuong'] ?? 0) ?></span>
-                        <span class="stat-label">Chương</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number"><?= number_format($stats['total_nguoidung'] ?? 0) ?></span>
-                        <span class="stat-label">Độc giả</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number"><?= number_format($stats['total_luotxem'] ?? 0) ?></span>
-                        <span class="stat-label">Lượt xem</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Featured Banner (chỉ hiển thị khi không có filter) -->
         <?php if (!$theloai_filter && !$loaitruyen_filter && $bannerTruyenList && $bannerTruyenList->num_rows > 0): ?>
