@@ -15,7 +15,7 @@ $result_loaitruyen = $conn->query($sql_loaitruyen);
 
 <div class="menu">
     <a href="/Wed_Doc_Truyen/wedtruyen/index.php" class="logo">
-        <i class="fas fa-book-reader"></i>
+        <i class="fas fa-book"></i>
         Web Đọc
     </a>
     
