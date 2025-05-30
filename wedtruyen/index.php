@@ -54,7 +54,7 @@ $theLoaiList = $conn->query($sqlTheLoai);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Đọc Truyện - Trang Chủ</title>
+    <title>Web Đọc - Trang Chủ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/trangChu.css">
 </head>
@@ -257,15 +257,27 @@ $theLoaiList = $conn->query($sqlTheLoai);
             </div>
 
             <!-- Load More Button -->
-            <div style="text-align: center; margin-top: 40px;">
-                <button class="fab" style="position: relative; width: auto; height: auto; padding: 15px 30px; border-radius: 25px; font-size: 1rem;" onclick="loadMoreStories()">
-                    <i class="fas fa-plus" style="margin-right: 10px;"></i>
-                    Xem thêm truyện
+      </div>
+
+            <!-- Load More Button -->
+            <div class="load-more-section">
+                <button class="load-more-btn" onclick="loadMoreStories()">
+                    <i class="fas fa-plus"></i>
+                    <span>Xem thêm truyện</span>
                 </button>
             </div>
         </section>
     </div>
 
+    <!-- Floating Action Buttons -->
+    <div class="fab-container" id="fabContainer">
+        <button class="fab" title="Lên đầu trang" onclick="scrollToTop()">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <button class="fab" title="Tìm kiếm" onclick="focusSearch()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
     <!-- Floating Action Buttons -->
     <div class="fab-container">
         <button class="fab" title="Lên đầu trang" onclick="scrollToTop()">

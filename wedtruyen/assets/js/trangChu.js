@@ -44,25 +44,45 @@ function focusSearch() {
 }
 
 // Show/hide FAB based on scroll position
-window.addEventListener('scroll', function() {
-    const fabContainer = document.querySelector('.fab-container');
-    if (window.scrollY > 300) {
-        fabContainer.style.opacity = '1';
-        fabContainer.style.transform = 'translateY(0)';
-    } else {
-        fabContainer.style.opacity = '0.7';
-        fabContainer.style.transform = 'translateY(10px)';
+document.addEventListener('DOMContentLoaded', function() {
+    const fabContainer = document.getElementById('fabContainer');
+    
+    if (fabContainer) {
+        // Initially hide if at top
+        if (window.scrollY <= 300) {
+            fabContainer.classList.add('hidden');
+        }
+        
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                fabContainer.classList.remove('hidden');
+            } else {
+                fabContainer.classList.add('hidden');
+            }
+        });
     }
 });
 
-// Initialize FAB container style
-document.addEventListener('DOMContentLoaded', function() {
-    const fabContainer = document.querySelector('.fab-container');
-    if (fabContainer) {
-        fabContainer.style.transition = 'all 0.3s ease';
-        fabContainer.style.opacity = '0.7';
-    }
-});
+// Load more stories functionality
+function loadMoreStories() {
+    const button = event.target.closest('.load-more-btn');
+    if (!button) return;
+    
+    const originalContent = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang tải...</span>';
+    button.disabled = true;
+    
+    // Simulate loading (replace with actual AJAX call)
+    setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        
+        // Here you would normally load more stories via AJAX
+        console.log('Loading more stories...');
+        alert('Tính năng "Xem thêm" sẽ được triển khai trong phiên bản tiếp theo!');
+    }, 2000);
+}
 
 // Filter chips interaction
 document.querySelectorAll('.filter-chip').forEach(chip => {
@@ -153,25 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
-
-// Load more stories functionality
-function loadMoreStories() {
-    const button = event.target;
-    const originalContent = button.innerHTML;
-    
-    button.innerHTML = '<div class="loading"></div> Đang tải...';
-    button.disabled = true;
-    
-    // Simulate loading (replace with actual AJAX call)
-    setTimeout(() => {
-        button.innerHTML = originalContent;
-        button.disabled = false;
-        
-        // Here you would normally load more stories via AJAX
-        console.log('Loading more stories...');
-        alert('Tính năng "Xem thêm" sẽ được triển khai trong phiên bản tiếp theo!');
-    }, 2000);
-}
 
 // Parallax effect for hero section
 window.addEventListener('scroll', () => {
