@@ -273,32 +273,20 @@ $related_stories = $stmt_related->get_result();
                         </div>
 
                         <div class="story-rating">
-                            <div class="rating-display">
-                                <div class="rating-score">
-                                    <span class="score-number"><?php echo $avg_rating; ?></span>
-                                    <div class="rating-stars">
-                                        <?php for($i = 1; $i <= 5; $i++): ?>
-                                            <i class="fas fa-star <?php echo $i <= round($avg_rating) ? 'active' : ''; ?>"></i>
-                                        <?php endfor; ?>
-                                    </div>
-                                    <span class="rating-count">(<?php echo $total_ratings; ?> đánh giá)</span>
+                            <form action="rate.php" method="POST" class="rating-form">
+                                <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                                <input type="hidden" name="so_sao" id="so_sao" value="<?php echo (int)$user_rating; ?>">
+                                <div class="interactive-stars">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <span class="star-rate<?php echo ($i <= $user_rating) ? ' active' : ''; ?>" data-value="<?php echo $i; ?>">
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                                    <?php endfor; ?>
                                 </div>
-                                
-                                <?php if (isset($_SESSION['user'])): ?>
-                                <div class="user-rating">
-                                    <span>Đánh giá của bạn:</span>
-                                    <form action="rate.php" method="POST" class="rating-form">
-                                        <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
-                                        <input type="hidden" id="so_sao" name="so_sao" value="<?php echo $user_rating; ?>">
-                                        <div class="interactive-stars">
-                                            <?php for($i = 1; $i <= 5; $i++): ?>
-                                                <i class="fas fa-star star-rate <?php echo $i <= $user_rating ? 'active' : ''; ?>" data-value="<?php echo $i; ?>"></i>
-                                            <?php endfor; ?>
-                                        </div>
-                                        <button type="submit" class="btn-rate">Gửi đánh giá</button>
-                                    </form>
-                                </div>
-                                <?php endif; ?>
+                                <button type="submit" class="btn-rate">Gửi đánh giá</button>
+                            </form>
+                            <div class="rating-count">
+                                <?php echo $total_ratings; ?> lượt đánh giá, trung bình <?php echo $avg_rating; ?> sao
                             </div>
                         </div>
 
@@ -648,492 +636,62 @@ $related_stories = $stmt_related->get_result();
 
     <!-- Scripts -->
     <script>
-        // Rating system with debugging
-        const stars = document.querySelectorAll('.star-rate');
-        const ratingInput = document.getElementById('so_sao');
-        const ratingForm = document.querySelector('.rating-form');
-        
-        console.log('Rating system initialized:', {
-            stars: stars.length,
-            ratingInput: ratingInput,
-            ratingForm: ratingForm
-        });
-        
-        if (stars.length > 0 && ratingInput) {
-            stars.forEach((star, index) => {
-                star.addEventListener('click', function(e) {
-                    e.preventDefault(); // Prevent any default behavior
-                    e.stopPropagation(); // Stop event bubbling
-                    
-                    const value = parseInt(this.getAttribute('data-value'));
-                    console.log('Star clicked:', value);
-                    
-                    ratingInput.value = value;
-                    
-                    // Update active stars
-                    stars.forEach((s, i) => {
-                        if (i < value) {
-                            s.classList.add('active');
-                        } else {
-                            s.classList.remove('active');
-                        }
-                    });
-                });
-                
-                star.addEventListener('mouseenter', function() {
-                    const value = parseInt(this.getAttribute('data-value'));
-                    
-                    // Update hover stars
-                    stars.forEach((s, i) => {
-                        if (i < value) {
-                            s.classList.add('hover');
-                        } else {
-                            s.classList.remove('hover');
-                        }
-                    });
-                });
-            });
-
+        // --- ĐOẠN NÀY ĐÃ ĐƯỢC ĐƠN GIẢN HÓA, CHỈ GIỮ 1 CÁCH XỬ LÝ SAO ---
+        document.addEventListener('DOMContentLoaded', function() {
             const interactiveStars = document.querySelector('.interactive-stars');
-            if (interactiveStars) {
-                interactiveStars.addEventListener('mouseleave', function() {
-                    stars.forEach(s => {
-                        s.classList.remove('hover');
+            const ratingInput = document.getElementById('so_sao');
+            const stars = document.querySelectorAll('.star-rate');
+            // Thêm dòng này để lấy form đánh giá
+            const ratingForm = document.querySelector('.rating-form');
+
+            if (interactiveStars && ratingInput && stars.length > 0) {
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('hover', idx < value);
+                        });
+                    });
+                    star.addEventListener('mouseleave', function() {
+                        stars.forEach(s => s.classList.remove('hover'));
+                    });
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        ratingInput.value = value;
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('active', idx < value);
+                        });
                     });
                 });
-            }
-            
-            // Form submission handler
-            if (ratingForm) {
-                ratingForm.addEventListener('submit', function(e) {
-                    const rating = ratingInput.value;
-                    if (!rating || rating === '0') {
-                        e.preventDefault();
-                        alert('Vui lòng chọn số sao để đánh giá!');
-                        return false;
-                    }
-                    console.log('Submitting rating:', rating);
+                interactiveStars.addEventListener('mouseleave', function() {
+                    stars.forEach(s => s.classList.remove('hover'));
                 });
             }
-        }
 
-        // Follow/Unfollow
-        document.getElementById('follow-button').addEventListener('click', function() {
-            const button = this;
-            const idTruyen = <?php echo $id_truyen; ?>;
-            const isFollowed = button.getAttribute('data-followed') === 'true';
-
-            fetch(isFollowed ? '../thuvien/delete.php?id_truyen=' + idTruyen : '../thuvien/addFollow.php', {
-                method: isFollowed ? 'GET' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: isFollowed ? null : JSON.stringify({ id_truyen: idTruyen })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    button.setAttribute('data-followed', isFollowed ? 'false' : 'true');
-                    button.classList.toggle('followed');
-                    button.querySelector('span').textContent = isFollowed ? 'Lưu truyện' : 'Đã lưu';
-                    
-                    // Show notification
-                    showNotification(data.message || (isFollowed ? 'Đã xóa khỏi thư viện' : 'Đã thêm vào thư viện'));
-                } else {
-                    showNotification(data.message || 'Có lỗi xảy ra', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Có lỗi xảy ra khi thực hiện thao tác', 'error');
-            });
-        });
-
-        // Chapter search and sort
-        let sortAsc = false;
-        const chaptersContainer = document.getElementById('chaptersContainer');
-        const chapters = Array.from(chaptersContainer.children);
-
-        document.getElementById('searchChapter').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            
-            chapters.forEach(chapter => {
-                const chapterNumber = chapter.getAttribute('data-chapter');
-                const chapterTitle = chapter.querySelector('.chapter-title').textContent.toLowerCase();
-                
-                if (chapterNumber.includes(searchTerm) || chapterTitle.includes(searchTerm)) {
-                    chapter.style.display = '';
-                } else {
-                    chapter.style.display = 'none';
-                }
-            });
-        });
-
-        function toggleSort() {
-            sortAsc = !sortAsc;
-            const sorted = chapters.sort((a, b) => {
-                const aNum = parseInt(a.getAttribute('data-chapter'));
-                const bNum = parseInt(b.getAttribute('data-chapter'));
-                return sortAsc ? aNum - bNum : bNum - aNum;
-            });
-            
-            chaptersContainer.innerHTML = '';
-            sorted.forEach(chapter => chaptersContainer.appendChild(chapter));
-        }
-
-        // Share functions
-        function shareStory() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '<?php echo addslashes($truyen['ten_truyen']); ?>',
-                    text: 'Đọc truyện <?php echo addslashes($truyen['ten_truyen']); ?> tại Web Đọc',
-                    url: window.location.href
-                });
-            } else {
-                copyLink();
-            }
-        }
-
-        function shareOnFacebook() {
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
-        }
-
-        function shareOnTwitter() {
-            window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('Đọc truyện <?php echo addslashes($truyen['ten_truyen']); ?>')}`, '_blank');
-        }
-
-        function copyLink() {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                showNotification('Đã sao chép link!');
-            });
-        }
-
-        // Notification system
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }
-
-        <?php if (isset($_SESSION['user']) && $_SESSION['user']['vai_tro'] === 'admin'): ?>
-        // Admin modal functions
-        function openAddChapterModal() {
-            document.getElementById('addChapterModal').classList.add('show');
-        }
-
-        function closeAddChapterModal() {
-            document.getElementById('addChapterModal').classList.remove('show');
-            document.getElementById('addChapterForm').reset();
-        }
-
-        function openEditChapterModal(id, so_chuong, tieu_de) {
-            document.getElementById('edit_id_chuong').value = id;
-            document.getElementById('edit_so_chuong').value = so_chuong;
-            document.getElementById('edit_tieu_de').value = tieu_de;
-            document.getElementById('editChapterModal').classList.add('show');
-        }
-
-        function closeEditChapterModal() {
-            document.getElementById('editChapterModal').classList.remove('show');
-        }
-
-        function openAddPageModal(id_chuong) {
-            document.getElementById('add_page_id_chuong').value = id_chuong;
-            document.getElementById('addPageModal').classList.add('show');
-        }
-
-        function closeAddPageModal() {
-            document.getElementById('addPageModal').classList.remove('show');
-            document.getElementById('addPageForm').reset();
-        }
-
-        // AJAX form submissions
-        document.getElementById('addChapterForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData) {
-                params.append(key, value);
-            }
-
-            try {
-                const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/chapter/add_ajax.php?id_truyen=${formData.get('id_truyen')}`, {
-                    method: 'POST',
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: params.toString()
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('Thêm chương thành công!');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showNotification(result.error || 'Có lỗi xảy ra!', 'error');
-                }
-            } catch (error) {
-                showNotification('Lỗi kết nối!', 'error');
-            }
-        };
-
-        document.getElementById('editChapterForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData) {
-                params.append(key, value);
-            }
-
-            try {
-                const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/chapter/edit_ajax.php?id_chuong=${formData.get('id_chuong')}`, {
-                    method: 'POST',
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: params.toString()
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('Cập nhật chương thành công!');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showNotification(result.error || 'Có lỗi xảy ra!', 'error');
-                }
-            } catch (error) {
-                showNotification('Lỗi kết nối!', 'error');
-            }
-        };
-
-        document.getElementById('addPageForm').onsubmit = async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const id_chuong = formData.get('id_chuong');
-
-            try {
-                const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=${id_chuong}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('Thêm trang thành công!');
-                    closeAddPageModal();
-                } else {
-                    showNotification(result.error || 'Có lỗi xảy ra!', 'error');
-                }
-            } catch (error) {
-                showNotification('Lỗi kết nối!', 'error');
-            }
-        };
-        <?php endif; ?>
-
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('show');
-                }
-            });
-        });
-
-        // Smooth scroll to sections
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Initialize tooltips
-        document.querySelectorAll('[title]').forEach(element => {
-            element.addEventListener('mouseenter', function() {
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = this.getAttribute('title');
-                document.body.appendChild(tooltip);
-                
-                const rect = this.getBoundingClientRect();
-                tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-                tooltip.style.left = rect.left + (rect.width - tooltip.offsetWidth) / 2 + 'px';
-                
-                this.setAttribute('data-original-title', this.getAttribute('title'));
-                this.removeAttribute('title');
-                
-                setTimeout(() => tooltip.classList.add('show'), 10);
-            });
-            
-            element.addEventListener('mouseleave', function() {
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {
-                    tooltip.classList.remove('show');
-                    setTimeout(() => tooltip.remove(), 300);
-                }
-                
-                if (this.hasAttribute('data-original-title')) {
-                    this.setAttribute('title', this.getAttribute('data-original-title'));
-                    this.removeAttribute('data-original-title');
-                }
-            });
+            // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
+            // ratingForm.addEventListener('submit', function(e) { ... });
         });
     </script>
 
-    <?php
-    // Close database resources
-    $stmt->close();
-    $stmt_chuong->close();
-    $stmt_min_chapter->close();
-    $stmt_latest->close();
-    $stmt_related->close();
-    if (isset($stmt_check_follow)) {
-        $stmt_check_follow->close();
-    }
-    if (isset($stmt_user_rating)) {
-        $stmt_user_rating->close();
-    }
-    $conn->close();
-    ?>
-    <!-- Thêm đoạn code này vào cuối file chiTietTruyen.php trước thẻ </body> -->
-<script>
-// Debug code - để kiểm tra vấn đề
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== RATING SYSTEM DEBUG ===');
-    
-    // 1. Kiểm tra các phần tử có tồn tại không
-    const stars = document.querySelectorAll('.star-rate');
-    const ratingInput = document.getElementById('so_sao');
-    const interactiveStars = document.querySelector('.interactive-stars');
-    const ratingForm = document.querySelector('.rating-form');
-    
-    console.log('1. Elements check:');
-    console.log('- Stars found:', stars.length);
-    console.log('- Stars elements:', stars);
-    console.log('- Rating input:', ratingInput);
-    console.log('- Interactive stars container:', interactiveStars);
-    console.log('- Rating form:', ratingForm);
-    
-    // 2. Kiểm tra data attributes
-    if (stars.length > 0) {
-        console.log('2. Star data attributes:');
-        stars.forEach((star, index) => {
-            console.log(`- Star ${index + 1}: data-value =`, star.getAttribute('data-value'));
-        });
-    }
-    
-    // 3. Kiểm tra current value
-    if (ratingInput) {
-        console.log('3. Current rating value:', ratingInput.value);
-    }
-    
-    // 4. Test click event
-    if (stars.length > 0) {
-        console.log('4. Adding test click listener to first star...');
-        stars[0].addEventListener('click', function(e) {
-            console.log('TEST CLICK WORKED!');
-            console.log('Event:', e);
-            console.log('Target:', e.target);
-            console.log('This element:', this);
-            console.log('Data-value:', this.getAttribute('data-value'));
-        });
-    }
-    
-    // 5. Kiểm tra có script nào khác can thiệp không
-    console.log('5. Other event listeners on stars:');
-    if (stars.length > 0) {
-        // This is a simple check, might not show all listeners
-        console.log('First star click listeners:', stars[0].onclick);
-    }
-    
-    // 6. Thử một cách tiếp cận khác - dùng event delegation
-    if (interactiveStars) {
-        console.log('6. Testing event delegation approach...');
-        interactiveStars.addEventListener('click', function(e) {
-            if (e.target.classList.contains('star-rate')) {
-                console.log('DELEGATION CLICK WORKED!');
-                const value = parseInt(e.target.getAttribute('data-value'));
-                console.log('Clicked star value:', value);
-                
-                // Update the rating
-                if (ratingInput) {
-                    ratingInput.value = value;
-                    console.log('Updated input value to:', value);
-                    
-                    // Update visual
-                    stars.forEach((star, index) => {
-                        if (index < value) {
-                            star.classList.add('active');
-                        } else {
-                            star.classList.remove('active');
-                        }
-                    });
-                }
-            }
-        });
-    }
-    
-    console.log('=== END DEBUG ===');
-});
-
-// Alternative approach - jQuery style (if jQuery is loaded)
-if (typeof $ !== 'undefined') {
-    $(document).ready(function() {
-        console.log('jQuery is loaded, trying jQuery approach...');
-        
-        $('.star-rate').on('click', function() {
-            console.log('jQuery click detected!');
-            const value = $(this).data('value');
-            console.log('Value:', value);
-        });
-    });
-}
-</script>
-
-<!-- Thêm CSS để đảm bảo stars có thể click được -->
-<style>
-    .interactive-stars {
-        position: relative;
-        z-index: 10;
-    }
-    
-    .star-rate {
-        position: relative;
-        z-index: 11;
-        cursor: pointer !important;
-        pointer-events: auto !important;
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
-    }
-    
-    /* Đảm bảo không có element nào che stars */
-    .rating-form * {
-        pointer-events: auto !important;
-    }
-</style>
+    <style>
+        .interactive-stars {
+            position: relative;
+            z-index: 10;
+        }
+        .star-rate {
+            position: relative;
+            z-index: 11;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+        }
+        .rating-form * {
+            pointer-events: auto !important;
+        }
+    </style>
 </body>
 </html>
