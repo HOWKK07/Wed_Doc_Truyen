@@ -161,6 +161,69 @@ $related_stories = $stmt_related->get_result();
     <title><?php echo htmlspecialchars($truyen['ten_truyen'] ?? 'Chi Tiết Truyện'); ?> - Web Đọc</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/truyen/chiTietTruyen-optimized.css">
+    <style>
+        /* Rating Stars Interactive */
+        .interactive-stars {
+            display: inline-flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .star-rate {
+            font-size: 24px;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .star-rate:hover {
+            transform: scale(1.2);
+        }
+
+        .star-rate.hover {
+            color: #ffd700 !important;
+            transform: scale(1.2);
+        }
+
+        .star-rate.active {
+            color: #ffd700 !important;
+        }
+
+        /* Ensure form submission */
+        .rating-form {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Button hover state */
+        .btn-rate {
+            padding: 6px 16px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-rate:hover {
+            background: #ffd700;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .btn-rate:active {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -585,38 +648,74 @@ $related_stories = $stmt_related->get_result();
 
     <!-- Scripts -->
     <script>
-        // Rating system
-        document.querySelectorAll('.star-rate').forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                document.getElementById('so_sao').value = value;
+        // Rating system with debugging
+        const stars = document.querySelectorAll('.star-rate');
+        const ratingInput = document.getElementById('so_sao');
+        const ratingForm = document.querySelector('.rating-form');
+        
+        console.log('Rating system initialized:', {
+            stars: stars.length,
+            ratingInput: ratingInput,
+            ratingForm: ratingForm
+        });
+        
+        if (stars.length > 0 && ratingInput) {
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent any default behavior
+                    e.stopPropagation(); // Stop event bubbling
+                    
+                    const value = parseInt(this.getAttribute('data-value'));
+                    console.log('Star clicked:', value);
+                    
+                    ratingInput.value = value;
+                    
+                    // Update active stars
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
                 
-                document.querySelectorAll('.star-rate').forEach((s, index) => {
-                    if (index < value) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
+                star.addEventListener('mouseenter', function() {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    
+                    // Update hover stars
+                    stars.forEach((s, i) => {
+                        if (i < value) {
+                            s.classList.add('hover');
+                        } else {
+                            s.classList.remove('hover');
+                        }
+                    });
                 });
             });
-            
-            star.addEventListener('mouseenter', function() {
-                const value = this.getAttribute('data-value');
-                document.querySelectorAll('.star-rate').forEach((s, index) => {
-                    if (index < value) {
-                        s.classList.add('hover');
-                    } else {
-                        s.classList.remove('hover');
-                    }
-                });
-            });
-        });
 
-        document.querySelector('.interactive-stars')?.addEventListener('mouseleave', function() {
-            document.querySelectorAll('.star-rate').forEach(s => {
-                s.classList.remove('hover');
-            });
-        });
+            const interactiveStars = document.querySelector('.interactive-stars');
+            if (interactiveStars) {
+                interactiveStars.addEventListener('mouseleave', function() {
+                    stars.forEach(s => {
+                        s.classList.remove('hover');
+                    });
+                });
+            }
+            
+            // Form submission handler
+            if (ratingForm) {
+                ratingForm.addEventListener('submit', function(e) {
+                    const rating = ratingInput.value;
+                    if (!rating || rating === '0') {
+                        e.preventDefault();
+                        alert('Vui lòng chọn số sao để đánh giá!');
+                        return false;
+                    }
+                    console.log('Submitting rating:', rating);
+                });
+            }
+        }
 
         // Follow/Unfollow
         document.getElementById('follow-button').addEventListener('click', function() {
