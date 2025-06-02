@@ -250,6 +250,14 @@ body {
     gap: 5px;
 }
 
+/* DEBUG: highlight overlay */
+.interactive-stars, .star-rate {
+    outline: 1px solid red !important;
+    background: rgba(255,255,0,0.05) !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+}
+
 .star-rate {
     font-size: 24px;
     color: rgba(255,255,255,0.3);
