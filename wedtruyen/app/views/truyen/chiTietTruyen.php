@@ -1016,5 +1016,124 @@ $related_stories = $stmt_related->get_result();
     }
     $conn->close();
     ?>
+    <!-- Thêm đoạn code này vào cuối file chiTietTruyen.php trước thẻ </body> -->
+<script>
+// Debug code - để kiểm tra vấn đề
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== RATING SYSTEM DEBUG ===');
+    
+    // 1. Kiểm tra các phần tử có tồn tại không
+    const stars = document.querySelectorAll('.star-rate');
+    const ratingInput = document.getElementById('so_sao');
+    const interactiveStars = document.querySelector('.interactive-stars');
+    const ratingForm = document.querySelector('.rating-form');
+    
+    console.log('1. Elements check:');
+    console.log('- Stars found:', stars.length);
+    console.log('- Stars elements:', stars);
+    console.log('- Rating input:', ratingInput);
+    console.log('- Interactive stars container:', interactiveStars);
+    console.log('- Rating form:', ratingForm);
+    
+    // 2. Kiểm tra data attributes
+    if (stars.length > 0) {
+        console.log('2. Star data attributes:');
+        stars.forEach((star, index) => {
+            console.log(`- Star ${index + 1}: data-value =`, star.getAttribute('data-value'));
+        });
+    }
+    
+    // 3. Kiểm tra current value
+    if (ratingInput) {
+        console.log('3. Current rating value:', ratingInput.value);
+    }
+    
+    // 4. Test click event
+    if (stars.length > 0) {
+        console.log('4. Adding test click listener to first star...');
+        stars[0].addEventListener('click', function(e) {
+            console.log('TEST CLICK WORKED!');
+            console.log('Event:', e);
+            console.log('Target:', e.target);
+            console.log('This element:', this);
+            console.log('Data-value:', this.getAttribute('data-value'));
+        });
+    }
+    
+    // 5. Kiểm tra có script nào khác can thiệp không
+    console.log('5. Other event listeners on stars:');
+    if (stars.length > 0) {
+        // This is a simple check, might not show all listeners
+        console.log('First star click listeners:', stars[0].onclick);
+    }
+    
+    // 6. Thử một cách tiếp cận khác - dùng event delegation
+    if (interactiveStars) {
+        console.log('6. Testing event delegation approach...');
+        interactiveStars.addEventListener('click', function(e) {
+            if (e.target.classList.contains('star-rate')) {
+                console.log('DELEGATION CLICK WORKED!');
+                const value = parseInt(e.target.getAttribute('data-value'));
+                console.log('Clicked star value:', value);
+                
+                // Update the rating
+                if (ratingInput) {
+                    ratingInput.value = value;
+                    console.log('Updated input value to:', value);
+                    
+                    // Update visual
+                    stars.forEach((star, index) => {
+                        if (index < value) {
+                            star.classList.add('active');
+                        } else {
+                            star.classList.remove('active');
+                        }
+                    });
+                }
+            }
+        });
+    }
+    
+    console.log('=== END DEBUG ===');
+});
+
+// Alternative approach - jQuery style (if jQuery is loaded)
+if (typeof $ !== 'undefined') {
+    $(document).ready(function() {
+        console.log('jQuery is loaded, trying jQuery approach...');
+        
+        $('.star-rate').on('click', function() {
+            console.log('jQuery click detected!');
+            const value = $(this).data('value');
+            console.log('Value:', value);
+        });
+    });
+}
+</script>
+
+<!-- Thêm CSS để đảm bảo stars có thể click được -->
+<style>
+    .interactive-stars {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .star-rate {
+        position: relative;
+        z-index: 11;
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+    }
+    
+    /* Đảm bảo không có element nào che stars */
+    .rating-form * {
+        pointer-events: auto !important;
+    }
+</style>
 </body>
 </html>
