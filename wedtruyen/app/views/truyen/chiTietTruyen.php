@@ -671,27 +671,224 @@ $related_stories = $stmt_related->get_result();
             // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
             // ratingForm.addEventListener('submit', function(e) { ... });
         });
-    </script>
 
-    <style>
-        .interactive-stars {
-            position: relative;
-            z-index: 10;
+        // Modal management functions
+        function openAddChapterModal() {
+            const modal = document.getElementById('addChapterModal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
         }
-        .star-rate {
-            position: relative;
-            z-index: 11;
-            cursor: pointer !important;
-            pointer-events: auto !important;
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
+
+        function closeAddChapterModal() {
+            const modal = document.getElementById('addChapterModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('addChapterForm').reset();
+            }
         }
-        .rating-form * {
-            pointer-events: auto !important;
+
+        function openEditChapterModal(id_chuong, so_chuong, tieu_de) {
+            const modal = document.getElementById('editChapterModal');
+            if (modal) {
+                document.getElementById('edit_id_chuong').value = id_chuong;
+                document.getElementById('edit_so_chuong').value = so_chuong;
+                document.getElementById('edit_tieu_de').value = tieu_de;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
         }
-    </style>
+
+        function closeEditChapterModal() {
+            const modal = document.getElementById('editChapterModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('editChapterForm').reset();
+            }
+        }
+
+        function openAddPageModal(id_chuong) {
+            const modal = document.getElementById('addPageModal');
+            if (modal) {
+                document.getElementById('add_page_id_chuong').value = id_chuong;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
+        }
+
+        function closeAddPageModal() {
+            const modal = document.getElementById('addPageModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('addPageForm').reset();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                event.target.classList.remove('show');
+            }
+        });
+
+        // Handle form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Chapter Form
+            const addChapterForm = document.getElementById('addChapterForm');
+            if (addChapterForm) {
+                addChapterForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const id_truyen = <?php echo $id_truyen; ?>;
+                    
+                    try {
+                        const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/chapter/add_ajax.php?id_truyen=${id_truyen}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert('Thêm chương thành công!');
+                            closeAddChapterModal();
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể thêm chương'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi thêm chương');
+                    }
+                });
+            }
+
+            // Edit Chapter Form
+            const editChapterForm = document.getElementById('editChapterForm');
+            if (editChapterForm) {
+                editChapterForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    
+                    try {
+                        const response = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/chapter/edit_ajax.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const text = await response.text();
+                        let result;
+                        
+                        try {
+                            result = JSON.parse(text);
+                        } catch (parseError) {
+                            console.error('Response text:', text);
+                            throw new Error('Invalid JSON response');
+                        }
+                        
+                        if (result.success) {
+                            alert('Cập nhật chương thành công!');
+                            closeEditChapterModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể cập nhật chương'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi cập nhật chương');
+                    }
+                });
+            }
+
+            // Add Page Form
+            const addPageForm = document.getElementById('addPageForm');
+            if (addPageForm) {
+                addPageForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const id_chuong = document.getElementById('add_page_id_chuong').value;
+                    
+                    try {
+                        const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=${id_chuong}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert(result.message || 'Thêm trang thành công!');
+                            closeAddPageModal();
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể thêm trang'));
+                            if (result.errors && result.errors.length > 0) {
+                                console.error('Errors:', result.errors);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi thêm trang');
+                    }
+                });
+            }
+        });
+
+        let isAsc = false;
+function toggleSort() {
+    const container = document.getElementById('chaptersContainer');
+    if (!container) return;
+    const items = Array.from(container.querySelectorAll('.chapter-item'));
+    // Đảo thứ tự mảng
+    isAsc = !isAsc;
+    items.sort((a, b) => {
+        const aNum = parseInt(a.getAttribute('data-chapter'));
+        const bNum = parseInt(b.getAttribute('data-chapter'));
+        return isAsc ? aNum - bNum : bNum - aNum;
+    });
+    // Xóa và thêm lại các item theo thứ tự mới
+    items.forEach(item => container.appendChild(item));
+}
+    </script>
+    <script>
+    // Xử lý nút Lưu truyện
+    document.addEventListener('DOMContentLoaded', function() {
+        const followBtn = document.getElementById('follow-button');
+        if (!followBtn) return;
+        followBtn.addEventListener('click', async function() {
+            <?php if (!isset($_SESSION['user'])): ?>
+                alert('Vui lòng đăng nhập để lưu truyện vào thư viện!');
+                window.location.href = '../taiKhoan/login.php';
+                return;
+            <?php else: ?>
+                const isFollowed = followBtn.getAttribute('data-followed') === 'true';
+                const action = isFollowed ? 'unfollow' : 'follow';
+                try {
+                    const response = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/' + (isFollowed ? 'delete.php' : 'add.php') + '?id_truyen=<?php echo $id_truyen; ?>', {
+                        method: 'GET'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        followBtn.setAttribute('data-followed', (!isFollowed).toString());
+                        followBtn.classList.toggle('followed', !isFollowed);
+                        followBtn.querySelector('span').textContent = !isFollowed ? 'Đã lưu' : 'Lưu truyện';
+                        alert(!isFollowed ? 'Đã lưu truyện vào thư viện!' : 'Đã xóa truyện khỏi thư viện!');
+                    } else {
+                        alert(result.message || 'Có lỗi xảy ra!');
+                    }
+                } catch (e) {
+                    alert('Có lỗi xảy ra khi lưu truyện!');
+                }
+            <?php endif; ?>
+        });
+    });
+    </script>
 </body>
 </html>
