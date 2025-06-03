@@ -1094,5 +1094,70 @@ function toggleSort() {
             }
         }
     </script>
+    <?php
+    // --- THÊM VÀO CUỐI FILE, ngay trước </body> ---
+
+    ?>
+    <script>
+// Follow/Unfollow functionality (nút Lưu truyện)
+document.addEventListener('DOMContentLoaded', function() {
+    const followButton = document.getElementById('follow-button');
+    if (followButton) {
+        followButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            <?php if (!isset($_SESSION['user'])): ?>
+                alert('Bạn cần đăng nhập để sử dụng chức năng này!');
+                window.location.href = '/Wed_Doc_Truyen/wedtruyen/app/views/taiKhoan/login.php';
+                return;
+            <?php else: ?>
+                const isFollowed = this.getAttribute('data-followed') === 'true';
+                const idTruyen = <?php echo $id_truyen; ?>;
+                const button = this;
+                button.disabled = true;
+                const url = isFollowed
+                    ? '/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/delete.php?id_truyen=' + idTruyen
+                    : '/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/addFollow.php';
+                const options = {
+                    method: isFollowed ? 'GET' : 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (!isFollowed) {
+                    options.body = JSON.stringify({ id_truyen: idTruyen });
+                }
+                try {
+                    const res = await fetch(url, options);
+                    const data = await res.json();
+                    if (data.success) {
+                        button.setAttribute('data-followed', (!isFollowed).toString());
+                        button.classList.toggle('followed', !isFollowed);
+                        button.querySelector('span').textContent = !isFollowed ? 'Đã lưu' : 'Lưu truyện';
+                        showNotification(!isFollowed ? 'Đã thêm vào thư viện' : 'Đã xóa khỏi thư viện', 'success');
+                    } else {
+                        showNotification(data.message || 'Có lỗi xảy ra', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Có lỗi xảy ra khi xử lý yêu cầu', 'error');
+                } finally {
+                    button.disabled = false;
+                }
+            <?php endif; ?>
+        });
+    }
+});
+
+// Thông báo nhỏ
+function showNotification(message, type = 'info') {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+    const notification = document.createElement('div');
+    notification.className = `notification ${type} show`;
+    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${message}</span>`;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 </body>
 </html>
