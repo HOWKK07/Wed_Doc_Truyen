@@ -898,6 +898,9 @@ body {
     z-index: 9999;
     padding: 20px;
     overflow-y: auto;
+    /* Thêm 2 dòng dưới để căn giữa modal khi dùng display: flex */
+    align-items: center;
+    justify-content: center;
 }
 
 .modal.show {

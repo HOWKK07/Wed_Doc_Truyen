@@ -223,6 +223,136 @@ $related_stories = $stmt_related->get_result();
         .btn-rate:active {
             transform: translateY(0);
         }
+
+        /* Reset rating styles */
+        .story-rating {
+            margin-bottom: 30px;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .rating-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-stars i {
+            font-size: 16px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .rating-stars i.active {
+            color: #ffd700;
+        }
+
+        .rating-count {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* User rating section */
+        .user-rating-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .rating-form {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .rating-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .interactive-stars {
+            display: inline-flex;
+            gap: 5px;
+        }
+
+        .star-rate {
+            font-size: 24px;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-block;
+            position: relative;
+            z-index: 10;
+        }
+
+        .star-rate:hover {
+            transform: scale(1.2);
+        }
+
+        .star-rate.hover,
+        .star-rate:hover {
+            color: #ffd700 !important;
+        }
+
+        .star-rate.active {
+            color: #ffd700 !important;
+        }
+
+        .btn-rate {
+            padding: 6px 16px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-rate:hover {
+            background: #ffd700;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .login-for-rating {
+            margin-top: 10px;
+        }
+
+        .login-for-rating a {
+            color: #ffd700;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .login-for-rating a:hover {
+            text-decoration: underline;
+        }
+
+        /* Remove debug styles */
+        .interactive-stars, .star-rate {
+            outline: none !important;
+            background: transparent !important;
+        }
     </style>
 </head>
 <body>
@@ -272,23 +402,47 @@ $related_stories = $stmt_related->get_result();
                             ?>
                         </div>
 
+                        <!-- Thay thế phần story-rating trong phần Story Details bằng đoạn mới -->
                         <div class="story-rating">
-                            <form action="rate.php" method="POST" class="rating-form">
-                                <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
-                                <input type="hidden" name="so_sao" id="so_sao" value="<?php echo (int)$user_rating; ?>">
-                                <div class="interactive-stars">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <span class="star-rate<?php echo ($i <= $user_rating) ? ' active' : ''; ?>" data-value="<?php echo $i; ?>">
-                                            <i class="fas fa-star"></i>
-                                        </span>
-                                    <?php endfor; ?>
+                            <div class="rating-display">
+                                <div class="rating-score">
+                                    <span class="score-number"><?php echo $avg_rating; ?></span>
+                                    <div class="rating-stars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i class="fas fa-star<?php echo ($i <= round($avg_rating)) ? ' active' : ''; ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn-rate">Gửi đánh giá</button>
-                            </form>
-                            <div class="rating-count">
-                                <?php echo $total_ratings; ?> lượt đánh giá, trung bình <?php echo $avg_rating; ?> sao
+                                <div class="rating-count">
+                                    <?php echo $total_ratings; ?> lượt đánh giá
+                                </div>
                             </div>
+                            
+                            <?php if (isset($_SESSION['user'])): ?>
+                            <div class="user-rating-section">
+                                <form action="rate.php" method="POST" class="rating-form" id="ratingForm">
+                                    <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                                    <input type="hidden" name="so_sao" id="so_sao" value="<?php echo (int)$user_rating; ?>">
+                                    <span class="rating-label">Đánh giá của bạn:</span>
+                                    <div class="interactive-stars" id="interactiveStars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <span class="star-rate<?php echo ($i <= $user_rating) ? ' active' : ''; ?>" 
+                                                  data-value="<?php echo $i; ?>" 
+                                                  onclick="setRating(<?php echo $i; ?>)">
+                                                <i class="fas fa-star"></i>
+                                            </span>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <button type="submit" class="btn-rate">Gửi đánh giá</button>
+                                </form>
+                            </div>
+                            <?php else: ?>
+                            <div class="login-for-rating">
+                                <a href="../taiKhoan/login.php">Đăng nhập để đánh giá</a>
+                            </div>
+                            <?php endif; ?>
                         </div>
+                        <!-- Kết thúc thay thế phần story-rating -->
 
                         <div class="story-actions">
                             <?php if ($id_chuong_min): ?>
@@ -671,27 +825,274 @@ $related_stories = $stmt_related->get_result();
             // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
             // ratingForm.addEventListener('submit', function(e) { ... });
         });
-    </script>
 
-    <style>
-        .interactive-stars {
-            position: relative;
-            z-index: 10;
+        // Modal management functions
+        function openAddChapterModal() {
+            const modal = document.getElementById('addChapterModal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
         }
-        .star-rate {
-            position: relative;
-            z-index: 11;
-            cursor: pointer !important;
-            pointer-events: auto !important;
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
+
+        function closeAddChapterModal() {
+            const modal = document.getElementById('addChapterModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('addChapterForm').reset();
+            }
         }
-        .rating-form * {
-            pointer-events: auto !important;
+
+        function openEditChapterModal(id_chuong, so_chuong, tieu_de) {
+            const modal = document.getElementById('editChapterModal');
+            if (modal) {
+                document.getElementById('edit_id_chuong').value = id_chuong;
+                document.getElementById('edit_so_chuong').value = so_chuong;
+                document.getElementById('edit_tieu_de').value = tieu_de;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
         }
-    </style>
+
+        function closeEditChapterModal() {
+            const modal = document.getElementById('editChapterModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('editChapterForm').reset();
+            }
+        }
+
+        function openAddPageModal(id_chuong) {
+            const modal = document.getElementById('addPageModal');
+            if (modal) {
+                document.getElementById('add_page_id_chuong').value = id_chuong;
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
+        }
+
+        function closeAddPageModal() {
+            const modal = document.getElementById('addPageModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.getElementById('addPageForm').reset();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                event.target.classList.remove('show');
+            }
+        });
+
+        // Handle form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Chapter Form
+            const addChapterForm = document.getElementById('addChapterForm');
+            if (addChapterForm) {
+                addChapterForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const id_truyen = <?php echo $id_truyen; ?>;
+                    
+                    try {
+                        const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/chapter/add_ajax.php?id_truyen=${id_truyen}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert('Thêm chương thành công!');
+                            closeAddChapterModal();
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể thêm chương'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi thêm chương');
+                    }
+                });
+            }
+
+            // Edit Chapter Form
+            const editChapterForm = document.getElementById('editChapterForm');
+            if (editChapterForm) {
+                editChapterForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    
+                    try {
+                        const response = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/chapter/edit_ajax.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const text = await response.text();
+                        let result;
+                        
+                        try {
+                            result = JSON.parse(text);
+                        } catch (parseError) {
+                            console.error('Response text:', text);
+                            throw new Error('Invalid JSON response');
+                        }
+                        
+                        if (result.success) {
+                            alert('Cập nhật chương thành công!');
+                            closeEditChapterModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể cập nhật chương'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi cập nhật chương');
+                    }
+                });
+            }
+
+            // Add Page Form
+            const addPageForm = document.getElementById('addPageForm');
+            if (addPageForm) {
+                addPageForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const id_chuong = document.getElementById('add_page_id_chuong').value;
+                    
+                    try {
+                        const response = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/views/anhChuong/add_ajax.php?id_chuong=${id_chuong}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert(result.message || 'Thêm trang thành công!');
+                            closeAddPageModal();
+                        } else {
+                            alert('Lỗi: ' + (result.error || 'Không thể thêm trang'));
+                            if (result.errors && result.errors.length > 0) {
+                                console.error('Errors:', result.errors);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi thêm trang');
+                    }
+                });
+            }
+        });
+
+        let isAsc = false;
+function toggleSort() {
+    const container = document.getElementById('chaptersContainer');
+    if (!container) return;
+    const items = Array.from(container.querySelectorAll('.chapter-item'));
+    // Đảo thứ tự mảng
+    isAsc = !isAsc;
+    items.sort((a, b) => {
+        const aNum = parseInt(a.getAttribute('data-chapter'));
+        const bNum = parseInt(b.getAttribute('data-chapter'));
+        return isAsc ? aNum - bNum : bNum - aNum;
+    });
+    // Xóa và thêm lại các item theo thứ tự mới
+    items.forEach(item => container.appendChild(item));
+}
+    </script>
+    <script>
+    // Xử lý nút Lưu truyện
+    document.addEventListener('DOMContentLoaded', function() {
+        const followBtn = document.getElementById('follow-button');
+        if (!followBtn) return;
+        followBtn.addEventListener('click', async function() {
+            <?php if (!isset($_SESSION['user'])): ?>
+                alert('Vui lòng đăng nhập để lưu truyện vào thư viện!');
+                window.location.href = '../taiKhoan/login.php';
+                return;
+            <?php else: ?>
+                const isFollowed = followBtn.getAttribute('data-followed') === 'true';
+                const action = isFollowed ? 'unfollow' : 'follow';
+                try {
+                    const response = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/' + (isFollowed ? 'delete.php' : 'add.php') + '?id_truyen=<?php echo $id_truyen; ?>', {
+                        method: 'GET'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        followBtn.setAttribute('data-followed', (!isFollowed).toString());
+                        followBtn.classList.toggle('followed', !isFollowed);
+                        followBtn.querySelector('span').textContent = !isFollowed ? 'Đã lưu' : 'Lưu truyện';
+                        alert(!isFollowed ? 'Đã lưu truyện vào thư viện!' : 'Đã xóa truyện khỏi thư viện!');
+                    } else {
+                        alert(result.message || 'Có lỗi xảy ra!');
+                    }
+                } catch (e) {
+                    alert('Có lỗi xảy ra khi lưu truyện!');
+                }
+            <?php endif; ?>
+        });
+    });
+    </script>
+    <!-- Thêm hàm setRating vào trong <script> để tránh lỗi ReferenceError -->
+    <script>
+        // --- ĐOẠN NÀY ĐÃ ĐƯỢC ĐƠN GIẢN HÓA, CHỈ GIỮ 1 CÁCH XỬ LÝ SAO ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const interactiveStars = document.querySelector('.interactive-stars');
+            const ratingInput = document.getElementById('so_sao');
+            const stars = document.querySelectorAll('.star-rate');
+            // Thêm dòng này để lấy form đánh giá
+            const ratingForm = document.querySelector('.rating-form');
+
+            if (interactiveStars && ratingInput && stars.length > 0) {
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('hover', idx < value);
+                        });
+                    });
+                    star.addEventListener('mouseleave', function() {
+                        stars.forEach(s => s.classList.remove('hover'));
+                    });
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        ratingInput.value = value;
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('active', idx < value);
+                        });
+                    });
+                });
+                interactiveStars.addEventListener('mouseleave', function() {
+                    stars.forEach(s => s.classList.remove('hover'));
+                });
+            }
+
+            // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
+            // ratingForm.addEventListener('submit', function(e) { ... });
+        });
+
+        // Thêm hàm setRating để xử lý sự kiện onclick trên các sao
+        function setRating(value) {
+            const ratingInput = document.getElementById('so_sao');
+            const stars = document.querySelectorAll('.star-rate');
+            if (ratingInput && stars.length > 0) {
+                ratingInput.value = value;
+                stars.forEach((s, idx) => {
+                    s.classList.toggle('active', idx < value);
+                });
+            }
+        }
+    </script>
 </body>
 </html>
