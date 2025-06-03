@@ -223,6 +223,136 @@ $related_stories = $stmt_related->get_result();
         .btn-rate:active {
             transform: translateY(0);
         }
+
+        /* Reset rating styles */
+        .story-rating {
+            margin-bottom: 30px;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .rating-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-stars i {
+            font-size: 16px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .rating-stars i.active {
+            color: #ffd700;
+        }
+
+        .rating-count {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* User rating section */
+        .user-rating-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .rating-form {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .rating-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .interactive-stars {
+            display: inline-flex;
+            gap: 5px;
+        }
+
+        .star-rate {
+            font-size: 24px;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-block;
+            position: relative;
+            z-index: 10;
+        }
+
+        .star-rate:hover {
+            transform: scale(1.2);
+        }
+
+        .star-rate.hover,
+        .star-rate:hover {
+            color: #ffd700 !important;
+        }
+
+        .star-rate.active {
+            color: #ffd700 !important;
+        }
+
+        .btn-rate {
+            padding: 6px 16px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-rate:hover {
+            background: #ffd700;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .login-for-rating {
+            margin-top: 10px;
+        }
+
+        .login-for-rating a {
+            color: #ffd700;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .login-for-rating a:hover {
+            text-decoration: underline;
+        }
+
+        /* Remove debug styles */
+        .interactive-stars, .star-rate {
+            outline: none !important;
+            background: transparent !important;
+        }
     </style>
 </head>
 <body>
@@ -272,23 +402,47 @@ $related_stories = $stmt_related->get_result();
                             ?>
                         </div>
 
+                        <!-- Thay thế phần story-rating trong phần Story Details bằng đoạn mới -->
                         <div class="story-rating">
-                            <form action="rate.php" method="POST" class="rating-form">
-                                <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
-                                <input type="hidden" name="so_sao" id="so_sao" value="<?php echo (int)$user_rating; ?>">
-                                <div class="interactive-stars">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <span class="star-rate<?php echo ($i <= $user_rating) ? ' active' : ''; ?>" data-value="<?php echo $i; ?>">
-                                            <i class="fas fa-star"></i>
-                                        </span>
-                                    <?php endfor; ?>
+                            <div class="rating-display">
+                                <div class="rating-score">
+                                    <span class="score-number"><?php echo $avg_rating; ?></span>
+                                    <div class="rating-stars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i class="fas fa-star<?php echo ($i <= round($avg_rating)) ? ' active' : ''; ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn-rate">Gửi đánh giá</button>
-                            </form>
-                            <div class="rating-count">
-                                <?php echo $total_ratings; ?> lượt đánh giá, trung bình <?php echo $avg_rating; ?> sao
+                                <div class="rating-count">
+                                    <?php echo $total_ratings; ?> lượt đánh giá
+                                </div>
                             </div>
+                            
+                            <?php if (isset($_SESSION['user'])): ?>
+                            <div class="user-rating-section">
+                                <form action="rate.php" method="POST" class="rating-form" id="ratingForm">
+                                    <input type="hidden" name="id_truyen" value="<?php echo $id_truyen; ?>">
+                                    <input type="hidden" name="so_sao" id="so_sao" value="<?php echo (int)$user_rating; ?>">
+                                    <span class="rating-label">Đánh giá của bạn:</span>
+                                    <div class="interactive-stars" id="interactiveStars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <span class="star-rate<?php echo ($i <= $user_rating) ? ' active' : ''; ?>" 
+                                                  data-value="<?php echo $i; ?>" 
+                                                  onclick="setRating(<?php echo $i; ?>)">
+                                                <i class="fas fa-star"></i>
+                                            </span>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <button type="submit" class="btn-rate">Gửi đánh giá</button>
+                                </form>
+                            </div>
+                            <?php else: ?>
+                            <div class="login-for-rating">
+                                <a href="../taiKhoan/login.php">Đăng nhập để đánh giá</a>
+                            </div>
+                            <?php endif; ?>
                         </div>
+                        <!-- Kết thúc thay thế phần story-rating -->
 
                         <div class="story-actions">
                             <?php if ($id_chuong_min): ?>
@@ -889,6 +1043,56 @@ function toggleSort() {
             <?php endif; ?>
         });
     });
+    </script>
+    <!-- Thêm hàm setRating vào trong <script> để tránh lỗi ReferenceError -->
+    <script>
+        // --- ĐOẠN NÀY ĐÃ ĐƯỢC ĐƠN GIẢN HÓA, CHỈ GIỮ 1 CÁCH XỬ LÝ SAO ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const interactiveStars = document.querySelector('.interactive-stars');
+            const ratingInput = document.getElementById('so_sao');
+            const stars = document.querySelectorAll('.star-rate');
+            // Thêm dòng này để lấy form đánh giá
+            const ratingForm = document.querySelector('.rating-form');
+
+            if (interactiveStars && ratingInput && stars.length > 0) {
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('hover', idx < value);
+                        });
+                    });
+                    star.addEventListener('mouseleave', function() {
+                        stars.forEach(s => s.classList.remove('hover'));
+                    });
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.getAttribute('data-value'));
+                        ratingInput.value = value;
+                        stars.forEach((s, idx) => {
+                            s.classList.toggle('active', idx < value);
+                        });
+                    });
+                });
+                interactiveStars.addEventListener('mouseleave', function() {
+                    stars.forEach(s => s.classList.remove('hover'));
+                });
+            }
+
+            // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
+            // ratingForm.addEventListener('submit', function(e) { ... });
+        });
+
+        // Thêm hàm setRating để xử lý sự kiện onclick trên các sao
+        function setRating(value) {
+            const ratingInput = document.getElementById('so_sao');
+            const stars = document.querySelectorAll('.star-rate');
+            if (ratingInput && stars.length > 0) {
+                ratingInput.value = value;
+                stars.forEach((s, idx) => {
+                    s.classList.toggle('active', idx < value);
+                });
+            }
+        }
     </script>
 </body>
 </html>
