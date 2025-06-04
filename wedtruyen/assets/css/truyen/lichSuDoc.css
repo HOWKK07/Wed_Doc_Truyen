@@ -1,6 +1,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3c4a55 0%, #1565c0 100%);
     min-height: 100vh;
     color: #333;
     margin: 0;
@@ -61,11 +61,11 @@ h1 {
     height: 100%;
     object-fit: cover;
     display: block;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid hsl(0, 0%, 20%);
 }
 
 .chapter-badge {
-    background: #667eea;
+    background: #bd4b2f;
     color: #fff;
     border-radius: 12px;
     font-weight: bold;
@@ -134,7 +134,7 @@ h1 {
     font-weight: bold;
     text-decoration: none;
     transition: color 0.2s;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5265bd 0%, #4a58a7 100%);
     color: #fff;
     border-radius: 20px;
     font-weight: bold;
@@ -144,7 +144,7 @@ h1 {
 .continue-btn:hover {
     color: #ffb100;
     text-decoration: underline;
-    background: #764ba2;
+    background: #282ba3;
 }
 
 .no-history {
