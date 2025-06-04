@@ -1,52 +1,78 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
 
-.content {
-    padding: 20px;
-}
-
-form {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-form h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-form input, form select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-form button:hover {
-    background-color: #0056b3;
-}
+        body {
+            background: #f6f8fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .account-edit-container {
+            max-width: 400px;
+            margin: 48px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 28px 24px 28px;
+        }
+        .account-edit-form h2 {
+            text-align: center;
+            color: #1976d2;
+            margin-bottom: 28px;
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #333;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: #f9f9f9;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        input:focus, select:focus {
+            border: 1.5px solid #1976d2;
+            outline: none;
+            background: #fff;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background: #1976d2;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1565c0;
+        }
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-cancel:hover {
+            background: #bdbdbd;
+        }
+        @media (max-width: 500px) {
+            .account-edit-container {
+                padding: 18px 8px;
+            }
+        }
