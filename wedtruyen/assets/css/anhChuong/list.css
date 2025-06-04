@@ -85,7 +85,7 @@ body {
     background: #d32f2f;
 }
 .add-page-btn, #save-order {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #2a3aca 100%);
     color: #fff;
     border: none;
     border-radius: 20px;
