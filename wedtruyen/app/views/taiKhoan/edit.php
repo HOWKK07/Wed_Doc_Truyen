@@ -49,25 +49,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/Wed_Doc_Truyen/wedtruyen/assets/css/taiKhoan/edit.css">
 </head>
 <body>
-
-    <!-- Nội dung chính -->
-    <div class="content">
-        <form action="" method="POST">
-            <h1>Sửa Tài Khoản</h1>
-            <label for="ten_dang_nhap">Tên Đăng Nhập:</label>
-            <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" value="<?php echo $user['ten_dang_nhap']; ?>" required>
-
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="<?php echo $user['email']; ?>" required>
-
-            <label for="vai_tro">Vai Trò:</label>
-            <select id="vai_tro" name="vai_tro" required>
-                <option value="admin" <?php echo $user['vai_tro'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                <option value="nguoidung" <?php echo $user['vai_tro'] === 'nguoidung' ? 'selected' : ''; ?>>Người Dùng</option>
-            </select>
-
-            <button type="submit">Cập Nhật</button>
-            <button type="button" onclick="window.history.back();" style="margin-left:10px;">Hủy</button>
+    <div class="account-edit-container">
+        <form class="account-edit-form" action="" method="POST" autocomplete="off">
+            <h2>Thông tin tài khoản</h2>
+            <div class="form-group">
+                <label for="ten_dang_nhap">Tên đăng nhập</label>
+                <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" value="<?php echo htmlspecialchars($user['ten_dang_nhap']); ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="vai_tro">Vai trò</label>
+                <input type="text" id="vai_tro" name="vai_tro" value="<?php echo $user['vai_tro'] === 'admin' ? 'Admin' : 'Người dùng'; ?>" readonly style="background:#f3f3f3; color:#555; cursor:not-allowed;">
+                <!-- Nếu muốn gửi giá trị vai_tro về server, dùng input hidden -->
+                <input type="hidden" name="vai_tro" value="<?php echo $user['vai_tro']; ?>">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <button type="button" class="btn btn-cancel" onclick="window.history.back();">Hủy</button>
+            </div>
         </form>
     </div>
 </body>

@@ -269,15 +269,7 @@ $theLoaiList = $conn->query($sqlTheLoai);
         </section>
     </div>
 
-    <!-- Floating Action Buttons -->
-    <div class="fab-container" id="fabContainer">
-        <button class="fab" title="Lên đầu trang" onclick="scrollToTop()">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="fab" title="Tìm kiếm" onclick="focusSearch()">
-            <i class="fas fa-search"></i>
-        </button>
-    </div>
+   
 
     <!-- Footer -->
     <?php include 'app/views/shares/footer.php'; ?>
