@@ -376,7 +376,7 @@ $related_stories = $stmt_related->get_result();
                         
                         <div class="story-meta-info">
                             <div class="meta-item">
-                                <i class="fas fa-user-pen"></i>
+                                <i class="fas fa-user"></i>
                                 <span>Tác giả: <strong><?php echo htmlspecialchars($truyen['tac_gia']); ?></strong></span>
                             </div>
                             <div class="meta-item">
@@ -1010,94 +1010,28 @@ function toggleSort() {
     // Xóa và thêm lại các item theo thứ tự mới
     items.forEach(item => container.appendChild(item));
 }
-    </script>
-    <script>
-    // Xử lý nút Lưu truyện
-    document.addEventListener('DOMContentLoaded', function() {
-        const followBtn = document.getElementById('follow-button');
-        if (!followBtn) return;
-        followBtn.addEventListener('click', async function() {
-            <?php if (!isset($_SESSION['user'])): ?>
-                alert('Vui lòng đăng nhập để lưu truyện vào thư viện!');
-                window.location.href = '../taiKhoan/login.php';
-                return;
-            <?php else: ?>
-                const isFollowed = followBtn.getAttribute('data-followed') === 'true';
-                const action = isFollowed ? 'unfollow' : 'follow';
-                try {
-                    const response = await fetch('/Wed_Doc_Truyen/wedtruyen/app/views/thuvien/' + (isFollowed ? 'delete.php' : 'add.php') + '?id_truyen=<?php echo $id_truyen; ?>', {
-                        method: 'GET'
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        followBtn.setAttribute('data-followed', (!isFollowed).toString());
-                        followBtn.classList.toggle('followed', !isFollowed);
-                        followBtn.querySelector('span').textContent = !isFollowed ? 'Đã lưu' : 'Lưu truyện';
-                        alert(!isFollowed ? 'Đã lưu truyện vào thư viện!' : 'Đã xóa truyện khỏi thư viện!');
-                    } else {
-                        alert(result.message || 'Có lỗi xảy ra!');
-                    }
-                } catch (e) {
-                    alert('Có lỗi xảy ra khi lưu truyện!');
+
+// Tìm kiếm chương theo tiêu đề hoặc số chương
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchChapter');
+    const chaptersContainer = document.getElementById('chaptersContainer');
+    if (searchInput && chaptersContainer) {
+        searchInput.addEventListener('input', function() {
+            const keyword = this.value.trim().toLowerCase();
+            const items = chaptersContainer.querySelectorAll('.chapter-item');
+            items.forEach(item => {
+                const title = item.querySelector('.chapter-title')?.textContent.toLowerCase() || '';
+                const number = item.querySelector('.chapter-number')?.textContent.toLowerCase() || '';
+                if (title.includes(keyword) || number.includes(keyword)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
                 }
-            <?php endif; ?>
+            });
         });
-    });
+    }
+});
     </script>
-    <!-- Thêm hàm setRating vào trong <script> để tránh lỗi ReferenceError -->
-    <script>
-        // --- ĐOẠN NÀY ĐÃ ĐƯỢC ĐƠN GIẢN HÓA, CHỈ GIỮ 1 CÁCH XỬ LÝ SAO ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const interactiveStars = document.querySelector('.interactive-stars');
-            const ratingInput = document.getElementById('so_sao');
-            const stars = document.querySelectorAll('.star-rate');
-            // Thêm dòng này để lấy form đánh giá
-            const ratingForm = document.querySelector('.rating-form');
-
-            if (interactiveStars && ratingInput && stars.length > 0) {
-                stars.forEach(star => {
-                    star.addEventListener('mouseenter', function() {
-                        const value = parseInt(this.getAttribute('data-value'));
-                        stars.forEach((s, idx) => {
-                            s.classList.toggle('hover', idx < value);
-                        });
-                    });
-                    star.addEventListener('mouseleave', function() {
-                        stars.forEach(s => s.classList.remove('hover'));
-                    });
-                    star.addEventListener('click', function() {
-                        const value = parseInt(this.getAttribute('data-value'));
-                        ratingInput.value = value;
-                        stars.forEach((s, idx) => {
-                            s.classList.toggle('active', idx < value);
-                        });
-                    });
-                });
-                interactiveStars.addEventListener('mouseleave', function() {
-                    stars.forEach(s => s.classList.remove('hover'));
-                });
-            }
-
-            // Nếu bạn có xử lý gì với ratingForm thì giờ đã có biến này
-            // ratingForm.addEventListener('submit', function(e) { ... });
-        });
-
-        // Thêm hàm setRating để xử lý sự kiện onclick trên các sao
-        function setRating(value) {
-            const ratingInput = document.getElementById('so_sao');
-            const stars = document.querySelectorAll('.star-rate');
-            if (ratingInput && stars.length > 0) {
-                ratingInput.value = value;
-                stars.forEach((s, idx) => {
-                    s.classList.toggle('active', idx < value);
-                });
-            }
-        }
-    </script>
-    <?php
-    // --- THÊM VÀO CUỐI FILE, ngay trước </body> ---
-
-    ?>
     <script>
 // Follow/Unfollow functionality (nút Lưu truyện)
 document.addEventListener('DOMContentLoaded', function() {
@@ -1158,6 +1092,6 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
-</script>
+    </script>
 </body>
 </html>
