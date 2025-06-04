@@ -9,7 +9,7 @@
 
 /* Header Menu Chính */
 .menu {
-    background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+    background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
     padding: 0;
     display: flex;
     justify-content: space-between;
@@ -19,22 +19,19 @@
     top: 0;
     z-index: 1000;
     height: 65px;
-    border-radius: 0 0 18px 18px; /* Bo tròn góc dưới */
-    margin: 0 12px; /* Cách lề hai bên cho nổi bật */
-    overflow: hidden;
 }
 
 /* Logo */
 .logo {
     font-size: 28px;
     font-weight: 700;
-    color: rgb(226, 230, 238);
+    color: rgb(255, 255, 255);
     text-decoration: none;
     padding: 0 30px;
     display: flex;
     align-items: center;
     height: 100%;
-    background: rgba(255, 255, 255, 0.1);
+
     transition: all 0.3s ease;
     letter-spacing: 1px;
 }
@@ -44,7 +41,6 @@
 }
 
 .logo:hover {
-    background: rgba(255, 255, 255, 0.2);
     transform: translateX(5px);
 }
 
@@ -330,14 +326,9 @@
     transform: scale(1.1);
 }
 
-.notification-wrapper #notification-btn i {
-    color: #ffb300 !important; /* vàng tươi */
+#notification-btn i {
     font-size: 24px;
-    transition: color 0.2s;
-}
-
-.notification-wrapper #notification-btn:hover i {
-    color: #ffd600 !important; /* vàng sáng hơn khi hover */
+    color: #ffb100;
 }
 
 #notification-count {
