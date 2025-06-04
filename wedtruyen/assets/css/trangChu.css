@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #40515f 0%, #1565c0 100%);
     min-height: 100vh;
     color: #333;
     overflow-x: hidden;
@@ -146,7 +146,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -171,7 +171,7 @@ body {
 }
 
 .quick-slider::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
     border-radius: 10px;
 }
 
@@ -374,7 +374,7 @@ body {
 }
 
 .filter-chip:hover, .filter-chip.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
     color: white;
     transform: translateY(-2px);
 }
@@ -410,7 +410,7 @@ body {
 }
 
 .load-more-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
     color: white;
     border: none;
     padding: 15px 30px;
@@ -459,7 +459,7 @@ body {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -547,7 +547,7 @@ body {
     width: 20px;
     height: 20px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
+    border-top: 3px solid #42a5f5;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

@@ -2,8 +2,8 @@
 
 /* Variables */
 :root {
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
+    --primary-color: #43a047; /* xanh lá */
+    --secondary-color: #2e7d32; /* xanh lá đậm */
     --success-color: #48bb78;
     --danger-color: #f56565;
     --warning-color: #ed8936;

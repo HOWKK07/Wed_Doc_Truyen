@@ -1,6 +1,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3c4a55 0%, #1565c0 100%);
     min-height: 100vh;
     color: #333;
     margin: 0;
@@ -86,7 +86,7 @@ h1 {
     position: absolute;
     bottom: 8px;
     left: 8px;
-    background: #667eea;
+    background: #af3e22;
     color: #fff;
     border-radius: 12px;
     font-weight: bold;
@@ -149,7 +149,7 @@ h1 {
 
 .continue-btn {
     display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2040d3 0%, #33349c 100%);
     color: #fff;
     padding: 6px 16px;
     border-radius: 20px;
@@ -161,7 +161,7 @@ h1 {
 }
 
 .continue-btn:hover {
-    background: #764ba2;
+    background: #413fc5;
 }
 
 .no-history {
