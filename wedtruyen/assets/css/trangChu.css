@@ -219,7 +219,8 @@ body {
     margin-top: 6px;
     line-height: 1.2;
     min-height: 20px;
-    max-width: 100%;
+    max-width: 120px; /* Giới hạn đúng bằng quick-thumb */
+    height: 20px;     /* Đảm bảo chỉ 1 dòng, không bị cao hơn ảnh */
 }
 
 /* Story Grid */

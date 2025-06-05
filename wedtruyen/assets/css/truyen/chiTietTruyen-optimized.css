@@ -132,6 +132,13 @@ body {
     font-weight: 700;
     margin-bottom: 20px;
     text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    word-break: break-word;
+    white-space: normal !important;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    position: relative;
+    z-index: 2;
+    line-height: 1.2;
 }
 
 .story-meta-info {
@@ -1226,4 +1233,9 @@ html {
     .chapters-container {
         max-height: none;
     }
+}
+
+.story-header, .story-info {
+    height: auto !important;
+    overflow: visible !important;
 }
