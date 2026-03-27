@@ -129,6 +129,59 @@ $theLoaiList = $conn->query($sqlTheLoai);
             </div>
         </section>
         <?php endif; ?>
+        <!-- Xếp hạng truyện -->
+        <?php if (!$theloai_filter && !$loaitruyen_filter): ?>
+        <section class="ranking-section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                Top Truyện Nổi Bật
+            </h2>
+            
+            <div class="ranking-grid">
+                <?php
+                $sqlRanking = "SELECT t.*, 
+                                     COUNT(DISTINCT c.id_chuong) as total_chapters,
+                                     MAX(c.ngay_tao) as last_update
+                              FROM truyen t
+                              LEFT JOIN chuong c ON t.id_truyen = c.id_truyen
+                              GROUP BY t.id_truyen
+                              ORDER BY t.luot_xem DESC 
+                              LIMIT 8";
+                $rankingResult = $conn->query($sqlRanking);
+                
+                if ($rankingResult && $rankingResult->num_rows > 0):
+                    $rank = 1;
+                    while ($story = $rankingResult->fetch_assoc()):
+                ?>
+                    <a href="/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=<?= $story['id_truyen'] ?>" class="ranking-card">
+                        <div class="rank-number rank-<?= $rank ?>"><?= $rank ?></div>
+                        <div class="ranking-thumb">
+                            <img src="/Wed_Doc_Truyen/<?= $story['anh_bia'] ?: 'assets/images/default-cover.jpg' ?>" 
+                                 alt="<?= htmlspecialchars($story['ten_truyen']) ?>" loading="lazy">
+                        </div>
+                        <div class="ranking-info">
+                            <h3 class="ranking-title"><?= htmlspecialchars($story['ten_truyen']) ?></h3>
+                            <div class="ranking-meta">
+                                <span><i class="fas fa-eye"></i> <?= number_format($story['luot_xem']) ?></span>
+                                <span><i class="fas fa-book"></i> <?= $story['total_chapters'] ?> chương</span>
+                            </div>
+                            <?php if ($story['last_update']): ?>
+                            <div class="last-update">
+                                <i class="fas fa-clock"></i> Cập nhật: <?= date('d/m/Y', strtotime($story['last_update'])) ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </a>
+                <?php
+                        $rank++;
+                    endwhile;
+                endif;
+                ?>
+            </div>
+        </section>
+        <?php endif; ?>
 
         <!-- Filter Section -->
         <div class="filter-section">

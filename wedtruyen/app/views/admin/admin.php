@@ -330,7 +330,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'error' => $e->getMessage()]);
             }
             exit();
-        // ...các case khác...
+
+        case 'editTaiKhoan':
+            try {
+                $id_nguoidung = (int)$_POST['id_nguoidung'];
+                $email = $_POST['email'];
+                $vai_tro = $_POST['vai_tro'];
+
+                // Không cho phép xóa admin cuối cùng hoặc tự hạ quyền admin cuối cùng
+                $stmt = $conn->prepare("SELECT vai_tro FROM nguoidung WHERE id_nguoidung = ?");
+                $stmt->bind_param("i", $id_nguoidung);
+                $stmt->execute();
+                $user = $stmt->get_result()->fetch_assoc();
+
+                if ($user && $user['vai_tro'] === 'admin' && $vai_tro !== 'admin') {
+                    $check_sql = "SELECT COUNT(*) as total FROM nguoidung WHERE vai_tro = 'admin'";
+                    $result = $conn->query($check_sql);
+                    $row = $result->fetch_assoc();
+                    if ($row['total'] <= 1) {
+                        echo json_encode(['success' => false, 'error' => 'Không thể thay đổi vai trò vì đây là tài khoản admin duy nhất.']);
+                        exit();
+                    }
+                }
+
+                $stmt = $conn->prepare("UPDATE nguoidung SET email = ?, vai_tro = ? WHERE id_nguoidung = ?");
+                $stmt->bind_param("ssi", $email, $vai_tro, $id_nguoidung);
+                if ($stmt->execute()) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Không thể cập nhật tài khoản']);
+                }
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            }
+            exit();
+        // ... các case khác ...
         default:
             echo json_encode(['success' => false, 'error' => 'Hành động không hợp lệ']);
             exit();

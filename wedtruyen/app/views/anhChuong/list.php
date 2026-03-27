@@ -361,6 +361,44 @@ $so_trang_moi = $so_trang_lon_nhat + 1;
                 alert('Lỗi: ' + (data.error || 'Không thể thêm trang'));
             }
         };
+
+        // --- Auto scroll khi kéo thả trang ---
+        let autoScrollInterval = null;
+
+        pageList.addEventListener('dragover', function(e) {
+            const scrollMargin = 40; // px
+            const scrollSpeed = 12; // px mỗi lần
+
+            const rect = pageList.getBoundingClientRect();
+            const mouseY = e.clientY;
+
+            // Nếu chuột gần mép trên
+            if (mouseY - rect.top < scrollMargin) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = setInterval(() => {
+                    pageList.scrollTop -= scrollSpeed;
+                }, 16);
+            }
+            // Nếu chuột gần mép dưới
+            else if (rect.bottom - mouseY < scrollMargin) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = setInterval(() => {
+                    pageList.scrollTop += scrollSpeed;
+                }, 16);
+            } else {
+                clearInterval(autoScrollInterval);
+            }
+        });
+
+        pageList.addEventListener('dragleave', () => {
+            clearInterval(autoScrollInterval);
+        });
+        pageList.addEventListener('drop', () => {
+            clearInterval(autoScrollInterval);
+        });
+        pageList.addEventListener('dragend', () => {
+            clearInterval(autoScrollInterval);
+        });
     </script>
 </body>
 </html>

@@ -63,25 +63,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Load more stories functionality
-function loadMoreStories() {
+let currentPage = 1;
+const storiesPerPage = 24;
+
+async function loadMoreStories() {
     const button = event.target.closest('.load-more-btn');
     if (!button) return;
-    
-    const originalContent = button.innerHTML;
-    
+
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang tải...</span>';
     button.disabled = true;
-    
-    // Simulate loading (replace with actual AJAX call)
-    setTimeout(() => {
-        button.innerHTML = originalContent;
+
+    currentPage++;
+    try {
+        const res = await fetch(`/Wed_Doc_Truyen/wedtruyen/app/api/listStories.php?page=${currentPage}`);
+        const data = await res.json();
+        if (data.success && data.stories.length > 0) {
+            const grid = document.querySelector('.story-grid');
+            data.stories.forEach(story => {
+                const a = document.createElement('a');
+                a.href = `/Wed_Doc_Truyen/wedtruyen/app/views/truyen/chiTietTruyen.php?id_truyen=${story.id_truyen}`;
+                a.className = 'story-card';
+                a.innerHTML = `
+                    <div class="story-thumb">
+                        <img src="/Wed_Doc_Truyen/${story.anh_bia || 'assets/images/default-cover.jpg'}" alt="${story.ten_truyen}">
+                        <div class="badge rating-badge">⭐ ${story.danh_gia ? Number(story.danh_gia).toFixed(1) : '0'}</div>
+                        ${story.trang_thai ? `<div class="badge status-badge">${story.trang_thai}</div>` : ''}
+                        <div class="chapter-counter">${story.max_chapter}</div>
+                    </div>
+                    <div class="story-info">
+                        <h3 class="story-title">${story.ten_truyen}</h3>
+                        <div class="story-meta">
+                            <span class="story-views"><i class="fas fa-eye"></i> ${Number(story.luot_xem).toLocaleString()} lượt xem</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(a);
+            });
+            button.innerHTML = '<i class="fas fa-plus"></i> <span>Xem thêm truyện</span>';
+            button.disabled = false;
+        } else {
+            button.style.display = 'none';
+        }
+    } catch (e) {
+        alert('Có lỗi xảy ra khi tải thêm truyện!');
+        button.innerHTML = '<i class="fas fa-plus"></i> <span>Xem thêm truyện</span>';
         button.disabled = false;
-        
-        // Here you would normally load more stories via AJAX
-        console.log('Loading more stories...');
-        alert('Tính năng "Xem thêm" sẽ được triển khai trong phiên bản tiếp theo!');
-    }, 2000);
+    }
 }
 
 // Filter chips interaction
